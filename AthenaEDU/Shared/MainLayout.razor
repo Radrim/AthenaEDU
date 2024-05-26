@@ -1,0 +1,53 @@
+﻿@inherits LayoutComponentBase
+@inject UserService userService;
+
+<PageTitle>AthenaEDU</PageTitle>
+
+<MudThemeProvider Theme="@CustomTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h5" Class="ml-3">AthenaEDU</MudText>
+        <MudSpacer />
+
+        <MudButton hidden="@isAuth()" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3; margin-right: 1rem">Авторизоваться</MudButton>
+        <MudButton hidden="@isAuth()" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3">Зарегистрироваться</MudButton>
+        <MudIconButton hidden="@(!isAuth())" Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Inherit" Edge="Edge.End" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu></NavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+
+    public bool isAuth()
+    {
+        return userService.CurrentUser is not null;
+    }
+
+    MudTheme CustomTheme = new MudTheme
+        {
+            Palette = new Palette
+            {
+                Primary = "#7c73c3",
+                Secondary = "#fafafa",
+                Dark = "#bbb1ff",
+                AppbarBackground = "#7c73c3",
+                Info = "#7c73c3"
+            }
+        };
+
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
