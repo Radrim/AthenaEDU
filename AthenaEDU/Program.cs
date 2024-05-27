@@ -12,6 +12,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<MongoDBConnection>();
 builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<CourseService>();
 //builder.Services.AddSingleton<WeatherForecastService>();
 
 

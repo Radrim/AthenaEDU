@@ -6,7 +6,7 @@ namespace AthenaEDU.Services
 {
     public class UserService
     {
-        public User? CurrentUser { get; private set; }
+        public User CurrentUser { get; set; }
         private IMongoCollection<User> _users;
 
         public UserService(MongoDBConnection connection)
@@ -29,9 +29,14 @@ namespace AthenaEDU.Services
             await _users.ReplaceOneAsync(x => x.Id == user.Id, user);
         }
 
-        public User AuthorizeUser(string email, string password)
+        public void AuthorizeUser(string email, string password)
         {
-            return _users.Find(x => x.Email == email && x.Password == password).FirstOrDefault();
+            CurrentUser = _users.Find(x => x.Email == email && x.Password == password).FirstOrDefault();
+        }
+
+        public void Logout() 
+        {
+            CurrentUser = null;
         }
     }
 }

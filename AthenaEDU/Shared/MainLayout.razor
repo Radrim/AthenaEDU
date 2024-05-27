@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject UserService userService;
+@inject NavigationManager navigationManager;
 
 <PageTitle>AthenaEDU</PageTitle>
 
@@ -12,12 +13,11 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">AthenaEDU</MudText>
         <MudSpacer />
-
-        <MudButton hidden="@isAuth()" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3; margin-right: 1rem">Авторизоваться</MudButton>
-        <MudButton hidden="@isAuth()" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3">Зарегистрироваться</MudButton>
-        <MudIconButton hidden="@(!isAuth())" Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Inherit" Edge="Edge.End" />
+        <MudButton hidden="@isAuth()" OnClick="NavigateToAuth" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3; margin-right: 1rem">Войти</MudButton>
+        <MudButton hidden="@isAuth()" OnClick="NavigateToRegistration" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3">Зарегистрироваться</MudButton>
+        <MudIconButton hidden="@(!isAuth())" OnClick="NavigateToProfile" Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Temporary" Elevation="1">
         <NavMenu></NavMenu>
     </MudDrawer>
     <MudMainContent>
@@ -44,10 +44,25 @@
             }
         };
 
-    bool _drawerOpen = true;
+    bool _drawerOpen = false;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    public void NavigateToRegistration()
+    {
+        navigationManager.NavigateTo("registrationPage");
+    }
+
+    public void NavigateToAuth()
+    {
+        navigationManager.NavigateTo("authPage");
+    }
+
+    public void NavigateToProfile()
+    {
+        navigationManager.NavigateTo("profilePage");
     }
 }

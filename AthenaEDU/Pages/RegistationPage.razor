@@ -1,33 +1,36 @@
-﻿@page "/registationPage"
+﻿@page "/registrationPage"
 @using System.ComponentModel.DataAnnotations;
 @inject NavigationManager navigationManager
+@inject UserService userService
+@inject ISnackbar snackbar
 
 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
-    <MudGrid Justify="Justify.Center" Style="align-items: center; height: 80vh; width: 80vw;">
-        <MudItem xs="10" sm="3">
-            <MudCard>
+    <MudGrid Justify="Justify.Center" Style="align-items: center; height: 90vh; width: 100vw;">
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="5" Style="padding: 0 1rem 0 1rem">
                 <MudCardContent>
-                    <MudTextField Label="First name" HelperText="Max. 8 characters"
-                    @bind-Value="model.Name" For="@(() => model.Name)" />
-
-                    <MudTextField Label="First name" HelperText="Max. 8 characters"
+                    <MudText Typo="Typo.h5" Style="font-weight: bold;" Color="Color.Primary" Align="Align.Center">РЕГИСТРАЦИЯ</MudText>
+                    <MudTextField T="string" Label="Фамилия"
                     @bind-Value="model.Surname" For="@(() => model.Surname)" />
 
-                    <MudTextField Label="Phone number" HelperText="Max. 11 characters"
-                    @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+                    <MudTextField T="string" Label="Имя"
+                    @bind-Value="model.Name" For="@(() => model.Name)" />
+                    
+                    <MudTextField T="string" Label="Отчество"
+                    @bind-Value="model.Patronymic" For="@(() => model.Patronymic)" />
 
-                    <MudTextField Label="Email" Class="mt-3"
-                    @bind-Value="model.Email" For="@(() => model.Email)" />
+                    <MudTextField T="string" Label="Email" Class="mt-3"
+                    @bind-Value="model.Email" For="@(() => model.Email)" InputType="InputType.Email" />
 
-                    <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                    <MudTextField T="string" Label="Пароль" HelperText="Придумайте надежный пароль" Class="mt-3"
                     @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
 
-                    <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                    <MudTextField T="string" Label="Повторите пароль" Class="mt-3"
                     @bind-Value="model.RepeatPassword" For="@(() => model.RepeatPassword)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto">Register</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto" Style="margin: 1rem" Color="Color.Primary">Зарегистрироваться</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -35,41 +38,37 @@
 </EditForm>
 
 @code {
-    RegisterAccountForm model = new RegisterAccountForm();
-    bool success;
+    RegistrationCredentials model = new RegistrationCredentials();
 
-    public class RegisterAccountForm
+    private async Task OnValidSubmit(EditContext context)
     {
-        [Required]
-        [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
-        public string Name { get; set; }
+        bool success = false;
+        try
+        {
+            if (userService.GetUserByEmail(model.Email) == null)
+            {
+                await CreateUser();
+                success = true;
+                navigationManager.NavigateTo("/authPage");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при регистрации пользователя: {ex.Message}");
+        }
 
-        [Required]
-        [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
-        public string Surname { get; set; }
-
-        [Required]
-        [StringLength(11, ErrorMessage = "Name length can't be more than 11.")]
-        public string PhoneNumber { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
-        [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
-        public string Password { get; set; }
-
-        [Required]
-        [Compare(nameof(Password))]
-        public string RepeatPassword { get; set; }
-
+        if (success)
+        {
+            snackbar.Add("Пользователь успешно зарегистрирован!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("При регистрации возникла ошибка!", Severity.Error);
+        }
     }
 
-    private void OnValidSubmit(EditContext context)
+    private async Task CreateUser()
     {
-        success = true;
-        navigationManager.NavigateTo("/");
-        StateHasChanged();
+        await userService.AddUserAsync(new User(model.Name, model.Surname, model.Patronymic, model.Email, model.Password));
     }
 }

@@ -1,11 +1,15 @@
-﻿<MudNavMenu Color="Color.Info">
-    <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-    <MudNavLink Href="/servers" Match="NavLinkMatch.Prefix">Servers</MudNavLink>
-    <MudNavGroup Title="Settings" Expanded="true">
-        <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
-        <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
-    </MudNavGroup>
-    <MudNavLink Href="/about" Match="NavLinkMatch.Prefix">About</MudNavLink>
+﻿@inject UserService userService
+
+<MudNavMenu Color="Color.Primary" Style="font-size: 20px; color: #7c73c3; margin-top: 1rem;">
+    <MudNavLink Href="/" Match="NavLinkMatch.All">Главная</MudNavLink>
+    @if (userService.CurrentUser != null && userService.CurrentUser.Role == "User")
+    {
+        <MudNavGroup Title="Курсы">
+            <MudNavLink Href="/activeCourses" Match="NavLinkMatch.Prefix">Активные курсы</MudNavLink>
+            <MudNavLink Href="/myCourses" Match="NavLinkMatch.Prefix">Мои курсы</MudNavLink>
+            <MudNavLink Href="/createCourse" Match="NavLinkMatch.Prefix">Создать курс</MudNavLink>
+        </MudNavGroup>
+    }
 </MudNavMenu>
 
 @code {

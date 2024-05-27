@@ -1,0 +1,82 @@
+﻿@page "/profilePage"
+
+@inject UserService userService
+@inject ISnackbar snackbar
+@inject IDialogService DialogService
+@inject NavigationManager navigationManager
+
+<EditForm Model="@_currentUser" OnValidSubmit="SaveChanges">
+    <DataAnnotationsValidator />
+    <MudGrid Spacing="5" Style="align-items: center; height: 90vh; width: 100vw;">
+        <MudItem xs="10">
+            <MudText Typo="Typo.h5" Style="border:inset; border-color: black;" T="string" Label="Фамилия" @bind-Value="_currentUser.Surname">@_currentUser.Surname</MudText>
+        </MudItem>
+        <MudItem xs="5">
+            <MudText Typo="Typo.h1" T="string" Label="Имя" @bind-Value="_currentUser.Name"></MudText>
+        </MudItem>
+        <MudItem xs="5">
+            <MudText Typo="Typo.h1" T="string" Label="Отчество" @bind-Value="_currentUser.Patronymic"></MudText>
+        </MudItem>
+        <MudItem xs="5">
+            <MudText Typo="Typo.h1" T="string" Label="Email" @bind-Value="_currentUser.Email"></MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true">
+                <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Сменить пароль</MudText>
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton OnClick="@Logout" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 fw-bold" FullWidth="true">
+                <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Выйти</MudText>
+            </MudButton>
+        </MudItem>
+        <MudItem xs="4">
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    private User _currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = userService.CurrentUser;
+    }
+
+    private async Task SaveChanges()
+    {
+        bool success = false;
+        try
+        {
+            await userService.UpdateUserAsync(_currentUser.Id, _currentUser);
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при попытке сохранить изменения: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Изменения успешно сохранены!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("При попытке сохранить изменения возникла ошибка!", Severity.Error);
+        }
+    }
+
+    private void Logout()
+    {
+        userService.Logout();
+        navigationManager.NavigateTo("/", forceLoad: true);
+    }
+
+    private void ChangePassword()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("User", userService.CurrentUser);
+        DialogService.Show<ChangePasswordDiag>("Смена пароля", parameters);
+    }
+}

@@ -1,0 +1,82 @@
+﻿@* @page "/createCoursePage";
+
+<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h5" Style="font-weight: bold;" Color="Color.Primary" Align="Align.Center">Создание курса</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm EditContext="courseContext">
+            <MudTextField @bind-Value="newCourse.Name" Label="Course Title" Variant="Variant.Filled" />
+            <InputFile OnChange="HandleFileSelected" />
+            @if (imageData != null)
+            {
+                <img src="@imageData" alt="Course Image" style="max-width: 100px;" />
+            }
+        </EditForm>
+        <MudText Typo="Typo.body1">Modules</MudText>
+        @foreach (var module in newCourse.Modules)
+        {
+            <EditForm EditContext="moduleContexts[module]">
+                <MudTextField @bind-Value="module.Name" Label="Module Title" Variant="Variant.Filled" />
+            </EditForm>
+            <MudText Typo="Typo.body1">Lessons</MudText>
+            @foreach (var lesson in module.Lessons)
+            {
+                <EditForm EditContext="lessonContexts[lesson]">
+                    <MudTextField @bind-Value="lesson.Name" Label="Lesson Title" Variant="Variant.Filled" />
+                </EditForm>
+            }
+            <MudButton Variant="Variant.Text" OnClick="@(() => AddLesson(module))">Add Lesson</MudButton>
+        }
+        <MudButton OnClick="@AddModule">Add Module</MudButton>
+        <MudButton OnClick="@CreateCourse">Create Course</MudButton>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private Course newCourse = new Course();
+    private EditContext courseContext;
+    private string imageData;
+
+    private Dictionary<Module, EditContext> moduleContexts = new Dictionary<Module, EditContext>();
+    private Dictionary<Lesson, EditContext> lessonContexts = new Dictionary<Lesson, EditContext>();
+
+    protected override void OnInitialized()
+    {
+        courseContext = new EditContext(newCourse);
+    }
+
+    private void AddModule()
+    {
+        var module = new Module();
+        newCourse.Modules.Add(module);
+        moduleContexts[module] = new EditContext(module);
+    }
+
+    private void AddLesson(Module module)
+    {
+        var lesson = new Lesson();
+        module.Lessons.Add(lesson);
+        lessonContexts[lesson] = new EditContext(lesson);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        var format = "image/png";
+        var resizedImage = await file.RequestImageFileAsync(format, 100, 100);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        // Here you would send the imageData to your server and get the image URL
+        // For example, you could use HttpClient to send the image to your server
+        // and get the image URL to store in your MongoDB document
+    }
+
+    private async Task CreateCourse()
+    {
+        // Здесь вы можете добавить логику для создания курса
+        // Например, отправка данных на сервер или сохранение в локальном хранилище
+    }
+}
+ *@

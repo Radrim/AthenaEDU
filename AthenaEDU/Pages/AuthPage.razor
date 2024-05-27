@@ -1,9 +1,58 @@
 ﻿@page "/authPage"
+@using System.ComponentModel.DataAnnotations;
+@inject NavigationManager navigationManager
+@inject UserService userService
+@inject ISnackbar snackbar
 
-<PageTitle>Авторизация</PageTitle>
+<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudGrid Justify="Justify.Center" Style="align-items: center; height: 90vh; width: 100vw;">
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="5" Style="padding: 1rem">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5" Style="margin-bottom: 2rem; font-weight: bold;" Color="Color.Primary" Align="Align.Center">АВТОРИЗАЦИЯ</MudText>
+                    <MudTextField T="string" Label="Email" Class="mt-3"
+                    @bind-Value="model.Email" For="@(() => model.Email)" UserAttributes="@(new Dictionary<string, object>() { { "autocomplete", "email" } })" />
 
-
+                    <MudTextField T="string" Label="Пароль" Class="mt-3"
+                    @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto" Style="margin: 1rem" Color="Color.Primary">Войти</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</EditForm>
 
 @code {
+    LoginCredentials model = new LoginCredentials();
 
+    private void OnValidSubmit(EditContext context)
+    {
+        bool success = false;
+        try
+        {
+            User user = userService.GetUserByEmail(model.Email);
+            if (user.Email == model.Email && user.Password == model.Password)
+            {
+                userService.AuthorizeUser(model.Email, model.Password);
+                success = true;
+                navigationManager.NavigateTo("/", forceLoad: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при авторизации пользователя: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Пользователь успешно авторизован!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("Неверная почта или пароль!", Severity.Error);
+        }
+    }
 }
