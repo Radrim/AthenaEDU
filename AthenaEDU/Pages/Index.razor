@@ -2,13 +2,13 @@
 @using System.ComponentModel.DataAnnotations;
 
 
-<MudGrid Justify="Justify.SpaceAround" Class="mud-theme-dark" Style="display: flex; align-items: center; " Spacing="4">
+<MudGrid Justify="Justify.SpaceAround" Class="mud-theme-dark" Style="display: flex; align-items: center;" Spacing="4">
     <MudItem xs="4">
         <MudPaper Class="mud-theme-secondary" Elevation="4">
             <MudTextField T="string" Label="Search" Class="object-fill px-3" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"></MudTextField>
         </MudPaper>
     </MudItem>
-    <MudItem xs="4" Style="font-size: 4px">
+    <MudItem xs="4">
             <MudSelect T="string" Label="Фильтрация по:" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
                    Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
                 <MudSelectItem Value="@("IT")" />

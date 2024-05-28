@@ -8,12 +8,14 @@ namespace AthenaEDU.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; private set; }
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public string? ImageName { get; private set; }
-        public bool isPrivate { get; private set; }
-        public List<Module> Modules { get; private set; } = new List<Module>();
-        public List<CourseCategory> Categories { get; private set; } = new List<CourseCategory>();
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string? ImageName { get; set; }
+        public bool isPrivate { get; set; }
+        public List<Module> Modules { get; set; } = new List<Module>();
+        public List<CourseCategory> Categories { get; set; } = new List<CourseCategory>();
+
+        public Course() { }
 
         public Course(string name, string description, string imageName) 
         {

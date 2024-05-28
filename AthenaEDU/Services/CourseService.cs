@@ -13,7 +13,7 @@ namespace AthenaEDU.Services
             _courses = connection.database.GetCollection<Course>("Courses");
         }
 
-        public async Task AddUserAsync(Course course)
+        public async Task AddCourseAsync(Course course)
         {
             await _courses.InsertOneAsync(course);
         }
@@ -23,7 +23,7 @@ namespace AthenaEDU.Services
             return _courses.Find(x => x.Name == name).FirstOrDefault();
         }
 
-        public async Task UpdateUserAsync(string id, Course course)
+        public async Task UpdateCourseAsync(Course course)
         {
             await _courses.ReplaceOneAsync(x => x.Id == course.Id, course);
         }

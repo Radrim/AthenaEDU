@@ -1,41 +1,25 @@
-﻿@* @page "/createCoursePage";
+﻿@page "/createCoursePage";
 
-<MudCard>
-    <MudCardHeader>
-        <MudText Typo="Typo.h5" Style="font-weight: bold;" Color="Color.Primary" Align="Align.Center">Создание курса</MudText>
-    </MudCardHeader>
-    <MudCardContent>
-        <EditForm EditContext="courseContext" Model="">
-            <MudTextField @bind-Value="newCourse.Name" Label="Course Title" Variant="Variant.Filled" />
-            <InputFile OnChange="HandleFileSelected" />
-            @if (imageData != null)
-            {
-                <img src="@imageData" alt="Course Image" style="max-width: 100px;" />
-            }
-        </EditForm>
-        <MudText Typo="Typo.body1">Modules</MudText>
-        @foreach (var module in newCourse.Modules)
-        {
-            <EditForm EditContext="moduleContexts[module]">
-                <MudTextField @bind-Value="module.Name" Label="Module Title" Variant="Variant.Filled" />
-            </EditForm>
-            <MudText Typo="Typo.body1">Lessons</MudText>
-            @foreach (var lesson in module.Lessons)
-            {
-                <EditForm EditContext="lessonContexts[lesson]">
-                    <MudTextField @bind-Value="lesson.Name" Label="Lesson Title" Variant="Variant.Filled" />
-                </EditForm>
-            }
-            <MudButton Variant="Variant.Text" OnClick="@(() => AddLesson(module))">Add Lesson</MudButton>
-        }
-        <MudButton OnClick="@AddModule">Add Module</MudButton>
-        <MudButton OnClick="@CreateCourse">Create Course</MudButton>
-    </MudCardContent>
-</MudCard>
+@inject CourseService courseService
+@inject ISnackbar snackBar
+
+<PageTitle>Создание курса</PageTitle>
+
+<MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
+    <MudPaper Elevation="10" Style="width: 60%">
+        <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
+            <MudItem xs="6" md="5">
+                <MudTextField T="string" @bind-Value="_course.Name" For="@(() => _course.Name)" Variant="Variant.Outlined" Label="Название курса"></MudTextField>
+            </MudItem>
+            <MudItem xs="3" md="3">
+                <MudButton OnClick="CreateCourse" Class="mud-theme-primary">Создать курс</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudGrid>
 
 @code {
-    private Course newCourse = new Course();
-    private EditContext courseContext;
+    private Course _course;
     private string imageData;
 
     private Dictionary<Module, EditContext> moduleContexts = new Dictionary<Module, EditContext>();
@@ -43,27 +27,13 @@
 
     protected override void OnInitialized()
     {
-        courseContext = new EditContext(newCourse);
-    }
-
-    private void AddModule()
-    {
-        var module = new Module();
-        newCourse.Modules.Add(module);
-        moduleContexts[module] = new EditContext(module);
-    }
-
-    private void AddLesson(Module module)
-    {
-        var lesson = new Lesson();
-        module.Lessons.Add(lesson);
-        lessonContexts[lesson] = new EditContext(lesson);
+        _course = new Course();
     }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;
-        var format = "image/png";
+        var format = "image/png,jpg";
         var resizedImage = await file.RequestImageFileAsync(format, 100, 100);
         var buffer = new byte[resizedImage.Size];
         await resizedImage.OpenReadStream().ReadAsync(buffer);
@@ -75,8 +45,27 @@
 
     private async Task CreateCourse()
     {
-        // Здесь вы можете добавить логику для создания курса
-        // Например, отправка данных на сервер или сохранение в локальном хранилище
+        bool success = false;
+        try
+        {
+            if (courseService.GetCourseByName(_course.Name) == null)
+            {
+                await courseService.AddCourseAsync(_course);
+                success = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при создании курса: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackBar.Add("Курс успешно создан!", Severity.Success);
+        }
+        else
+        {
+            snackBar.Add("Курс с таким названием уже существует!", Severity.Error);
+        }
     }
 }
- *@
