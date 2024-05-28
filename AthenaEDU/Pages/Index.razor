@@ -1,8 +1,55 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations;
 
-<MudText>ЭТО Должно быть по центру</MudText>
+
+<MudGrid Justify="Justify.SpaceAround" Class="mud-theme-dark" Style="display: flex; align-items: center; " Spacing="4">
+    <MudItem xs="4">
+        <MudPaper Class="mud-theme-secondary" Elevation="4">
+            <MudTextField T="string" Label="Search" Class="object-fill px-3" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"></MudTextField>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="4" Style="font-size: 4px">
+            <MudSelect T="string" Label="Фильтрация по:" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                   Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                <MudSelectItem Value="@("IT")" />
+                <MudSelectItem Value="@("Бизнес и менеджемент")" />
+                <MudSelectItem Value="@("Технологии и инновации")" />
+            </MudSelect>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Spacing="3" Justify="Justify.SpaceEvenly" Style="height: 90vh; width: 100vw;">
+    @foreach(Course course in Courses)
+    {
+        <MudItem xs="3" >
+            <MudCard>
+                <MudCardContent>
+                    <MudImage Src="/Svet.jpg" Fluid="true"/>
+                    <MudText Typo="Typo.h5">@course.Name</MudText>
+                    <MudText Typo="Typo.body2">@course.Description</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
 
 @code {
-    
+    List<Course> Courses = new List<Course>()
+    {
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
+    };
 }

@@ -1,3 +1,4 @@
+using AthenaEDU.Interfaces;
 using AthenaEDU.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,6 +14,8 @@ builder.Services.AddMudServices();
 builder.Services.AddSingleton<MongoDBConnection>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<CourseService>();
+builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 //builder.Services.AddSingleton<WeatherForecastService>();
 
 

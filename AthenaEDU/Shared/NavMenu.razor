@@ -1,6 +1,6 @@
 ﻿@inject UserService userService
 
-<MudNavMenu Color="Color.Primary" Style="font-size: 20px; color: #7c73c3; margin-top: 1rem;">
+<MudNavMenu Color="Color.Secondary" Style="font-size: 20px; margin-top: 1rem;">
     <MudNavLink Href="/" Match="NavLinkMatch.All">Главная</MudNavLink>
     @if (userService.CurrentUser != null && userService.CurrentUser.Role == "User")
     {
@@ -9,6 +9,12 @@
             <MudNavLink Href="/myCourses" Match="NavLinkMatch.Prefix">Мои курсы</MudNavLink>
             <MudNavLink Href="/createCourse" Match="NavLinkMatch.Prefix">Создать курс</MudNavLink>
         </MudNavGroup>
+    }
+
+    @if (userService.CurrentUser != null && userService.CurrentUser.Role == "Admin")
+    {
+        <MudNavLink Href="/createCategory" Match="NavLinkMatch.Prefix">Создать категорию</MudNavLink>
+        <MudNavLink Href="/courseRequest" Match="NavLinkMatch.Prefix">Заявки</MudNavLink>
     }
 </MudNavMenu>
 

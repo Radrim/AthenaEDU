@@ -5,27 +5,33 @@
 @inject IDialogService DialogService
 @inject NavigationManager navigationManager
 
+<PageTitle>Личный кабинет</PageTitle>
+
 <EditForm Model="@_currentUser" OnValidSubmit="SaveChanges">
     <DataAnnotationsValidator />
-    <MudGrid Spacing="5" Style="align-items: center; height: 90vh; width: 100vw;">
-        <MudItem xs="10">
-            <MudText Typo="Typo.h5" Style="border:inset; border-color: black;" T="string" Label="Фамилия" @bind-Value="_currentUser.Surname">@_currentUser.Surname</MudText>
+        <MudGrid Style="align-items: center; height: 90vh; width: 100vw;">
+        <MudItem xs="12" md="6">
+            <MudText Typo="Typo.h5" T="string">Фамилия</MudText>
+            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Surname</MudText>
         </MudItem>
-        <MudItem xs="5">
-            <MudText Typo="Typo.h1" T="string" Label="Имя" @bind-Value="_currentUser.Name"></MudText>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" T="string">Имя</MudText>
+            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Name</MudText>
         </MudItem>
-        <MudItem xs="5">
-            <MudText Typo="Typo.h1" T="string" Label="Отчество" @bind-Value="_currentUser.Patronymic"></MudText>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" T="string">Отчество</MudText>
+            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Patronymic</MudText>
         </MudItem>
-        <MudItem xs="5">
-            <MudText Typo="Typo.h1" T="string" Label="Email" @bind-Value="_currentUser.Email"></MudText>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" T="string">Email</MudText>
+            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Email</MudText>
         </MudItem>
         <MudItem xs="4">
             <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true">
                 <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Сменить пароль</MudText>
             </MudButton>
         </MudItem>
-        <MudItem xs="2">
+        <MudItem xs="4">
             <MudButton OnClick="@Logout" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 fw-bold" FullWidth="true">
                 <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Выйти</MudText>
             </MudButton>
@@ -49,7 +55,9 @@
         bool success = false;
         try
         {
-            await userService.UpdateUserAsync(_currentUser.Id, _currentUser);
+            await userService.UpdateUserAsync(
+                
+                _currentUser);
             success = true;
         }
         catch (Exception ex)

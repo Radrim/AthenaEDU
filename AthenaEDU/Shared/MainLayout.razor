@@ -17,7 +17,7 @@
         <MudButton hidden="@isAuth()" OnClick="NavigateToRegistration" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3">Зарегистрироваться</MudButton>
         <MudIconButton hidden="@(!isAuth())" OnClick="NavigateToProfile" Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Temporary" Elevation="1">
+    <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Temporary" Elevation="1" Color="Color.Primary">
         <NavMenu></NavMenu>
     </MudDrawer>
     <MudMainContent>

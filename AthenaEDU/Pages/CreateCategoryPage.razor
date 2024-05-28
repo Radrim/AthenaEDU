@@ -1,0 +1,60 @@
+﻿@page "/createCategory"
+
+@inject IDialogService DialogService
+@inject CategoryService categoryService
+
+<PageTitle>Категории</PageTitle>
+
+<MudDataGrid Items="@_categories" Class="ma-15" Elevation="5" Square>
+    <ToolBarContent>
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Категории</MudText>
+        <MudSpacer></MudSpacer>
+        <MudButton OnClick="@OpenAddCategoryDialog" Class="mud-theme-primary mr-10">Добавить категорию</MudButton>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Name" Title="Название" />
+            <TemplateColumn>
+                <CellTemplate>
+                <MudButton Class="mud-theme-primary" >Редактировать</MudButton>
+                </CellTemplate>
+            </TemplateColumn>
+        <TemplateColumn>
+            <CellTemplate>
+                <MudButton Class="mud-theme-primary" OnClick="@(() => DeleteCategory(context.Item.Name))">Удалить</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+@code {
+    private List<CourseCategory> _categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategories();
+    }
+
+    private async Task GetCategories()
+    {
+        _categories = await categoryService.GetAllCategories();
+    }
+
+    private async Task OpenAddCategoryDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<AddCategoryDiag>("Добавление категории", options);
+
+        var res = await dialog.Result;
+
+        if (!res.Canceled)
+        {
+            await GetCategories();
+        }
+    }
+
+    private async Task DeleteCategory(string name)
+    {
+        await categoryService.DeleteCategoryByName(name);
+        await GetCategories();
+    }
+}

@@ -1,0 +1,53 @@
+﻿@inject ISnackbar snackbar
+@inject CategoryService categoryService
+
+<MudForm Model="_model">
+    <MudDialog>
+        <DialogContent>
+            <MudTextField T="string"  Label="Название" @bind-Value="_model.Name" For="@(() => _model.Name)"></MudTextField>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewCategory">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private CourseCategory _model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _model = new CourseCategory();
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    private async Task AddNewCategory()
+    {
+        bool success = false;
+
+        try
+        {
+            await categoryService.AddCategoryAsync(_model);
+            success = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении категории: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Новая категория успешно добавлена!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("При создании категории произошла ошибка!", Severity.Error);
+        }
+    }
+}

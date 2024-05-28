@@ -14,6 +14,13 @@ namespace AthenaEDU.Models
         public bool isPrivate { get; private set; }
         public List<Module> Modules { get; private set; } = new List<Module>();
         public List<CourseCategory> Categories { get; private set; } = new List<CourseCategory>();
+
+        public Course(string name, string description, string imageName) 
+        {
+            Name = name;
+            Description = description;
+            ImageName = imageName;
+        }
        
     }
 }

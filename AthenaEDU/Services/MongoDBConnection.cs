@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace AthenaEDU.Services
 {
@@ -6,7 +7,6 @@ namespace AthenaEDU.Services
     {
         public IMongoDatabase database;
         string _defaultConnectionString = "mongodb://localhost";
-
         public MongoDBConnection()
         {
             var client = new MongoClient(_defaultConnectionString);

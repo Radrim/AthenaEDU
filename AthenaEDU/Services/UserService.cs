@@ -24,7 +24,7 @@ namespace AthenaEDU.Services
             return _users.Find(x => x.Email == email).FirstOrDefault();
         }
 
-        public async Task UpdateUserAsync(string id, User user)
+        public async Task UpdateUserAsync(User user)
         {
             await _users.ReplaceOneAsync(x => x.Id == user.Id, user);
         }

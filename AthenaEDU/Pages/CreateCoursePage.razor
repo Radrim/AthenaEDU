@@ -5,7 +5,7 @@
         <MudText Typo="Typo.h5" Style="font-weight: bold;" Color="Color.Primary" Align="Align.Center">Создание курса</MudText>
     </MudCardHeader>
     <MudCardContent>
-        <EditForm EditContext="courseContext">
+        <EditForm EditContext="courseContext" Model="">
             <MudTextField @bind-Value="newCourse.Name" Label="Course Title" Variant="Variant.Filled" />
             <InputFile OnChange="HandleFileSelected" />
             @if (imageData != null)
