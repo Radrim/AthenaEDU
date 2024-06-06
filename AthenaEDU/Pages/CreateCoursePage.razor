@@ -42,7 +42,7 @@
                                                         <RowTemplate>
                                                             <MudTd DataLabel="Название урока">@context.Name</MudTd>
                                                             <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenEditLessonDialog(module))">Редактировать</MudButton></MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenDeleteLessonDialog(module))">Удалить</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
                                                         </RowTemplate>
                                                     </MudTable>
                                                 </MudListItem>
@@ -104,6 +104,22 @@
         _modules = _course.Modules;    
     }
 
+    private async Task OpenConfirmationDialog(Module module, Lesson lesson)
+    {
+        var dialogParameters = new DialogParameters();
+        dialogParameters.Add("Action", "Delete");
+
+        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialogResult = await DialogService.Show<ConfirmDialog>("Удаление", dialogParameters, dialogOptions).Result;
+
+        if (!dialogResult.Canceled)
+        {
+            module.Lessons.Remove(lesson);
+            StateHasChanged();
+        }
+    }
+
     private async Task OpenAddLessonDialog(Module module)
     {
         var parameters = new DialogParameters<AddLessonDialog>();
@@ -121,22 +137,6 @@
     }
 
     private async Task OpenEditLessonDialog(Module module)
-    {
-        var parameters = new DialogParameters<AddLessonDialog>();
-        parameters.Add(x => x.course, _course);
-        parameters.Add(x => x.module, module);
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
-
-        var res = await dialog.Result;
-
-        if (!res.Canceled)
-        {
-            StateHasChanged();
-        }
-    }
-
-    private async Task OpenDeleteLessonDialog(Module module)
     {
         var parameters = new DialogParameters<AddLessonDialog>();
         parameters.Add(x => x.course, _course);

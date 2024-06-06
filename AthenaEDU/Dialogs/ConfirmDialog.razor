@@ -1,0 +1,27 @@
+﻿
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Подтвердите действие</MudText>
+        <MudText>Вы уверены, что хотите выполнить это действие?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@CancelAction">Отмена</MudButton>
+        <MudButton OnClick="@ConfirmAction" Color="Color.Primary">Подтвердить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Action { get; set; }
+
+    private void ConfirmAction()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void CancelAction()
+    {
+        MudDialog.Cancel();
+    }
+}

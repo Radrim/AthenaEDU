@@ -11,18 +11,11 @@ namespace AthenaEDU.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string? ImageName { get; set; }
+        public string Author { get; set; }
         public bool isPrivate { get; set; }
         public List<Module> Modules { get; set; } = new List<Module>();
-        public List<CourseCategory> Categories { get; set; } = new List<CourseCategory>();
+        public CourseCategory Category { get; set; }
 
         public Course() { }
-
-        public Course(string name, string description, string imageName) 
-        {
-            Name = name;
-            Description = description;
-            ImageName = imageName;
-        }
-       
     }
 }
