@@ -15,7 +15,6 @@ builder.Services.AddSingleton<MongoDBConnection>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<CourseService>();
 builder.Services.AddSingleton<CategoryService>();
-builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 //builder.Services.AddSingleton<WeatherForecastService>();
 
 

@@ -8,9 +8,9 @@
     <DataAnnotationsValidator />
     <MudGrid Justify="Justify.Center" Style="align-items: center; height: 90vh; width: 100vw;">
         <MudItem xs="12" sm="4">
-            <MudCard Elevation="5" Style="padding: 1rem">
+            <MudCard Elevation="5" Style="padding: 2rem">
                 <MudCardContent>
-                    <MudText Typo="Typo.h5" Style="margin-bottom: 2rem; font-weight: bold;" Color="Color.Primary" Align="Align.Center">АВТОРИЗАЦИЯ</MudText>
+                    <MudText Typo="Typo.h5" Style="margin-bottom: 3rem; font-weight: bold;" Color="Color.Primary" Align="Align.Center">АВТОРИЗАЦИЯ</MudText>
                     <MudTextField T="string" Label="Email" Class="mt-3"
                     @bind-Value="model.Email" For="@(() => model.Email)" UserAttributes="@(new Dictionary<string, object>() { { "autocomplete", "email" } })" />
 
@@ -18,7 +18,7 @@
                     @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto" Style="margin: 1rem" Color="Color.Primary">Войти</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto mr-5" Color="Color.Primary">Войти</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -28,7 +28,7 @@
 @code {
     LoginCredentials model = new LoginCredentials();
 
-    private void OnValidSubmit(EditContext context)
+    private async Task OnValidSubmit(EditContext context)
     {
         bool success = false;
         try

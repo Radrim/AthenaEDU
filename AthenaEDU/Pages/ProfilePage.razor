@@ -7,43 +7,53 @@
 
 <EditForm Model="@_currentUser" OnValidSubmit="SaveChanges">
     <DataAnnotationsValidator />
-        <MudGrid Style="align-items: center; height: 90vh; width: 100vw;">
-        <MudItem xs="12" md="6">
-            <MudText Typo="Typo.h5" T="string">Фамилия</MudText>
-            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Surname</MudText>
+    <MudGrid Style="height: 90vh; width: 100vw;" Class="mt-10">
+        <MudItem xs="4" md="4">
+            <MudGrid Justify="Justify.Center" Style="align-items: center;">
+                <MudItem xs="6" md="6">
+                    <MudStack>
+                        <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 ml-2" FullWidth="true">Сменить изображение</MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
         </MudItem>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5" T="string">Имя</MudText>
-            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Name</MudText>
+        <MudItem xs="3" md="3">
+            <MudGrid>
+                <MudItem xs="12" md="10">
+                    <MudField Label="Фамилия" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Surname</MudField>
+                </MudItem>
+                <MudItem xs="12" md="10">
+                    <MudField Label="Имя" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Name</MudField>
+                </MudItem>
+                <MudItem xs="12" md="10">
+                    <MudField Label="Отчество" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Patronymic</MudField>
+                </MudItem>
+                <MudItem xs="12" md="10">
+                    <MudField Label="Email" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Email</MudField>
+                </MudItem>
+            </MudGrid>
         </MudItem>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5" T="string">Отчество</MudText>
-            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Patronymic</MudText>
-        </MudItem>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5" T="string">Email</MudText>
-            <MudText Typo="Typo.h5" Style="border:solid; border-color: black; border-width: 1px; width: 15rem" T="string">@_currentUser.Email</MudText>
-        </MudItem>
-        <MudItem xs="4">
-            <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true">
-                <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Сменить пароль</MudText>
-            </MudButton>
-        </MudItem>
-        <MudItem xs="4">
-            <MudButton OnClick="@Logout" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4 fw-bold" FullWidth="true">
-                <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Выйти</MudText>
-            </MudButton>
-        </MudItem>
-        <MudItem xs="4">
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
+        <MudItem xs="2" md="2">
+            <MudStack Justify="Justify.FlexStart">
+                    <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true">
+                        <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Сменить пароль</MudText>
+                    </MudButton>
+
+                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
+
+                    <MudButton OnClick="@Logout" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">
+                        <MudText Color="Color.Secondary" Class="fw-bold" Typo="Typo.button">Выйти</MudText>
+                    </MudButton>
+            </MudStack>
         </MudItem>
     </MudGrid>
 </EditForm>
 
 @code {
-    private User _currentUser;
+    private User _currentUser = new User();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _currentUser = userService.CurrentUser;
     }
@@ -54,7 +64,7 @@
         try
         {
             await userService.UpdateUserAsync(
-                
+
                 _currentUser);
             success = true;
         }
@@ -71,6 +81,12 @@
         {
             snackbar.Add("При попытке сохранить изменения возникла ошибка!", Severity.Error);
         }
+    }
+
+    private void UploadFiles2(IBrowserFile file)
+    {
+
+        //TODO upload the files to the server
     }
 
     private void Logout()

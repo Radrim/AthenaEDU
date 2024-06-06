@@ -7,9 +7,9 @@ namespace AthenaEDU.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; private set; }
-        public string Name { get; private set; }
-        public List<Lesson> Lessons { get; private set; } = new List<Lesson>();
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public List<Lesson> Lessons { get; set; } = new List<Lesson>();
 
         public Module() { }
 

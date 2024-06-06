@@ -1,8 +1,9 @@
 ﻿@page "/"
+
 @using System.ComponentModel.DataAnnotations;
+@inject CourseService courseService
 
-
-<MudGrid Justify="Justify.SpaceAround" Class="mud-theme-dark" Style="display: flex; align-items: center;" Spacing="4">
+<MudGrid Justify="Justify.SpaceAround" Class="mud-theme-dark" Style="display: flex; align-items: center;">
     <MudItem xs="4">
         <MudPaper Class="mud-theme-secondary" Elevation="4">
             <MudTextField T="string" Label="Search" Class="object-fill px-3" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"></MudTextField>
@@ -18,10 +19,13 @@
     </MudItem>
 </MudGrid>
 
-<MudGrid Spacing="3" Justify="Justify.SpaceEvenly" Style="height: 90vh; width: 100vw;">
+<MudGrid Spacing="5" Class="mt-5 d-flex align-content-start" Justify="Justify.FlexStart" Style="height: 90vh; width: 100vw;">
     @foreach(Course course in Courses)
     {
+        courseName = course.Name;
+        string path = "/courseMainPage/" + courseName;
         <MudItem xs="3" >
+            <MudNavLink Href="@path">
             <MudCard>
                 <MudCardContent>
                     <MudImage Src="/Svet.jpg" Fluid="true"/>
@@ -29,27 +33,22 @@
                     <MudText Typo="Typo.body2">@course.Description</MudText>
                 </MudCardContent>
             </MudCard>
+            </MudNavLink>
         </MudItem>
     }
 </MudGrid>
 
 @code {
-    List<Course> Courses = new List<Course>()
+    private string courseName;
+    List<Course> Courses = new List<Course>();
+
+    protected override async Task OnInitializedAsync()
     {
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-        new Course ("Обучение C#", "Курс для новичков желающих обучиться C#", "фото"),
-    };
+        await FillCourses();
+    }
+
+    private async Task FillCourses()
+    {
+        Courses = await courseService.GetAllCourses();
+    }
 }

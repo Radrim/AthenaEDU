@@ -1,0 +1,61 @@
+﻿@inject ISnackbar snackbar
+@inject CourseService courseService
+
+<MudForm Model="_model">
+    <MudDialog>
+        <DialogContent>
+            <MudTextField T="string" Label="Название" @bind-Value="_model.Name" For="@(() => _model.Name)"></MudTextField>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewLesson">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Course course { get; set; }
+    [Parameter] public Module module { get; set; }
+
+    private Lesson _model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _model = new Lesson();
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    private async Task AddNewLesson()
+    {
+        bool success = false;
+
+        try
+        {
+            ReplaceModule();
+            success = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении урока: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Новый урок успешно добавлен!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("При создании урока произошла ошибка!", Severity.Error);
+        }
+    }
+
+    private void ReplaceModule()
+    {
+        module.Lessons.Add(_model);
+        courseService.ReplaceModuleAsync(course, module);
+    }
+}

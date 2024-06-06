@@ -4,18 +4,18 @@ using MongoDB.Driver;
 
 namespace AthenaEDU.Services
 {
-    public class CourseService
+    public class ModuleService
     {
         private IMongoCollection<Course> _courses;
 
-        public CourseService(MongoDBConnection connection)
+        public ModuleService(MongoDBConnection connection)
         {
             _courses = connection.database.GetCollection<Course>("Courses");
         }
 
-        public async Task AddCourseAsync(Course course)
+        public async Task UpdateCourseModulesAsync(Course course, Module module)
         {
-            await _courses.InsertOneAsync(course);
+            await _courses.ReplaceOneAsync(x => x.Id == course.Id && course.Modules.Any(m => m.Id == module.Id), course);
         }
 
         public Course GetCourseByName(string name)
@@ -32,16 +32,6 @@ namespace AthenaEDU.Services
         {
             return await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
         }
-
-        public void ReplaceModuleAsync(Course course, Module module) 
-        {
-            int index = course.Modules.FindIndex(x => x.Id == module.Id);
-
-            if (index  != -1) 
-            {
-                course.Modules[index] = module;
-                _courses.ReplaceOne(x => x.Id == course.Id, course);
-            }
-        }
     }
 }
+

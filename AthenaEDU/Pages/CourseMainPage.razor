@@ -1,0 +1,58 @@
+﻿@page "/courseMainPage/{courseName}"
+
+@inject CourseService courseService
+
+<PageTitle>Главная страница курса</PageTitle>
+
+<MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
+    <MudPaper Elevation="10" Style="width: 60%">
+        <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
+            <MudItem xs="6" md="8">
+                <MudTextField T="string" @bind-Value="@_course.Name"  Variant="Variant.Outlined" Label="Название курса"></MudTextField>
+                <MudImage Src="/Svet.jpg" Fluid="true" />
+            </MudItem>
+            <MudItem xs="6" md="8">
+                <MudDataGrid Items="@_course.Modules">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Категории</MudText>
+                    </ToolBarContent>
+                        <Columns>
+                            <PropertyColumn Property="x => x.Name" Title="Название модуля" />
+                            <TemplateColumn>
+                                <CellTemplate>
+                                    <MudList>
+                                        <MudListItem Text="Уроки">
+                                            <NestedList>
+                                                @foreach(var item in lessons)
+                                                {
+                                                    <MudListItem>@item.Name</MudListItem>
+                                                }
+                                        </NestedList>
+                                    </MudListItem>
+                                    </MudList>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                </MudDataGrid>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string courseName { get; set; }
+    private Course _course;
+    private List<Lesson> lessons;
+
+    protected override void OnInitialized()
+    {
+        // Здесь вы можете использовать параметр Id
+        _course = courseService.GetCourseByName(courseName);
+        var module = _course.Modules.FirstOrDefault();
+        if (module != null)
+        {
+            lessons = module.Lessons;
+        }
+    }
+}

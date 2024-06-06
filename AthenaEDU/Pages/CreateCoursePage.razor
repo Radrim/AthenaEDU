@@ -2,6 +2,7 @@
 
 @inject CourseService courseService
 @inject ISnackbar snackBar
+@inject IDialogService DialogService
 
 <PageTitle>Создание курса</PageTitle>
 
@@ -14,21 +15,106 @@
             <MudItem xs="3" md="3">
                 <MudButton OnClick="CreateCourse" Class="mud-theme-primary">Создать курс</MudButton>
             </MudItem>
+            <MudItem xs="3">
+                <MudSelect @bind-Value="_selectedAccessibility" T="string" Label="Доступность курса" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                    @foreach (string item in courseAccessibility)
+                    {
+                        <MudSelectItem Value="@item" />
+                    }
+                </MudSelect>
+            </MudItem>
         </MudGrid>
+        @if (isCreated())
+        {
+            <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
+                <MudItem xs="3" md="3">
+                    <MudButton OnClick="AddComponent" Class="mud-theme-primary">Добавить модуль</MudButton>
+                </MudItem>
+            </MudGrid>
+            <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
+                @foreach (var component in components)
+                {
+                    <MudItem xs="10" md="8">
+                        @component
+                    </MudItem>
+                    <MudDataGrid Items="@_lessons" Class="ma-15" Elevation="5" Square>
+                     <ToolBarContent>
+                         <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Уроки</MudText>
+                         <MudSpacer></MudSpacer>
+                         <MudButton Class="mud-theme-primary mr-10" OnClick="@OpenAddLessonDialog">Добавить урок</MudButton>
+                     </ToolBarContent>
+                     <Columns>
+                         <PropertyColumn Property="x => x.Name" Title="Название" />
+                         <TemplateColumn>
+                             <CellTemplate>
+                                 <MudButton Class="mud-theme-primary">Редактировать</MudButton>
+                             </CellTemplate>
+                         </TemplateColumn>
+                         <TemplateColumn>
+                             <CellTemplate>
+                                 <MudButton Class="mud-theme-primary">Удалить</MudButton>
+                             </CellTemplate>
+                         </TemplateColumn>
+                     </Columns>
+                 </MudDataGrid>
+                }
+            </MudGrid>
+        }
     </MudPaper>
 </MudGrid>
 
 @code {
     private Course _course;
+    private bool courseCreated = false;
     private string imageData;
+    private List<Lesson> _lessons;
 
-    private Dictionary<Module, EditContext> moduleContexts = new Dictionary<Module, EditContext>();
-    private Dictionary<Lesson, EditContext> lessonContexts = new Dictionary<Lesson, EditContext>();
+    private List<string> courseAccessibility = new List<string>()
+    {
+        "Открытый",
+        "Приватный"
+    };
+
+    private string _selectedAccessibility;
+
+    private List<RenderFragment> components = new List<RenderFragment>();
 
     protected override void OnInitialized()
     {
         _course = new Course();
+        _lessons = new List<Lesson>();
     }
+
+    private async Task OpenAddLessonDialog()
+    {
+        var parameters = new DialogParameters<AddLessonDialog>();
+        parameters.Add(x => x.course, _course);
+        parameters.Add(x => x.module, _course.Modules.FirstOrDefault());
+        var options = new DialogOptions { CloseOnEscapeKey = true};
+        var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
+
+        var res = await dialog.Result;
+
+        if (!res.Canceled)
+        {
+            Module module = _course.Modules.FirstOrDefault();
+            _lessons = module.Lessons;
+            StateHasChanged();
+        }
+    }
+
+    private void AddComponent()
+    {
+        components.Add(builder =>
+        {
+            builder.OpenComponent(0, typeof(ModuleFormComponent));
+            builder.AddAttribute(1, "Course", _course);
+            builder.CloseComponent();
+        });
+        StateHasChanged();
+    }
+
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -43,6 +129,11 @@
         // and get the image URL to store in your MongoDB document
     }
 
+    private bool isCreated()
+    {
+        return courseCreated;
+    }
+
     private async Task CreateCourse()
     {
         bool success = false;
@@ -52,6 +143,7 @@
             {
                 await courseService.AddCourseAsync(_course);
                 success = true;
+                courseCreated = true;
             }
         }
         catch (Exception ex)
@@ -62,6 +154,7 @@
         if (success)
         {
             snackBar.Add("Курс успешно создан!", Severity.Success);
+            StateHasChanged();
         }
         else
         {

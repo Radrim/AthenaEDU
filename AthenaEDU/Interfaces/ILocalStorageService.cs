@@ -1,7 +1,4 @@
-﻿using Microsoft.JSInterop;
-using System.Text.Json;
-
-namespace AthenaEDU.Interfaces
+﻿namespace AthenaEDU.Interfaces
 {
     public interface ILocalStorageService
     {
