@@ -42,7 +42,7 @@
     private async Task OpenAddCategoryDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<AddCategoryDiag>("Добавление категории", options);
+        var dialog = await DialogService.ShowAsync<AddCategoryDialog>("Добавление категории", options);
 
         var res = await dialog.Result;
 

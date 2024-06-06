@@ -1,0 +1,68 @@
+﻿@inject ISnackbar snackbar
+@inject CourseService courseService
+
+<MudForm Model="_module">
+    <MudDialog>
+        <DialogContent>
+            <MudTextField T="string" Label="Название" @bind-Value="_module.Name" For="@(() => _module.Name)"></MudTextField>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewModule">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Course course { get; set; }
+    private Module _module;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _module = new Module();
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    private async Task AddNewModule()
+    {
+        bool success = false;
+
+        try
+        {
+            if (!String.IsNullOrEmpty(_module.Name))
+            {
+                await AddModule();
+                success = true;
+                Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении модуля: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Новый модуль успешно добавлен!", Severity.Success);
+        }
+
+        else if (String.IsNullOrEmpty(_module.Name))
+        {
+            snackbar.Add("Название модуля не может быть пустым!", Severity.Error);
+        }
+
+        else
+        {
+            snackbar.Add("При создании модуля произошла ошибка!", Severity.Error);
+        }
+    }
+
+    private async Task AddModule()
+    {
+        course.Modules.Add(_module);
+        await courseService.UpdateCourseAsync(course);
+    }
+}

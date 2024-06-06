@@ -7,60 +7,59 @@
 <PageTitle>Создание курса</PageTitle>
 
 <MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
-    <MudPaper Elevation="10" Style="width: 60%">
+    <MudPaper Elevation="10" Style="width: 80%">
         <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
             <MudItem xs="6" md="5">
                 <MudTextField T="string" @bind-Value="_course.Name" For="@(() => _course.Name)" Variant="Variant.Outlined" Label="Название курса"></MudTextField>
             </MudItem>
+
             <MudItem xs="3" md="3">
                 <MudButton OnClick="CreateCourse" Class="mud-theme-primary">Создать курс</MudButton>
             </MudItem>
-            <MudItem xs="3">
-                <MudSelect @bind-Value="_selectedAccessibility" T="string" Label="Доступность курса" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
-                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
-                    @foreach (string item in courseAccessibility)
-                    {
-                        <MudSelectItem Value="@item" />
-                    }
-                </MudSelect>
+
+            <MudItem xs="12" md="12">
+                <MudGrid Style="display: flex; justify-content: space-between;">
+                    <MudItem xs="9" md="9" Class="ma-2 ml-5">
+                        <MudList Clickable="true" Color="Color.Secondary">
+                            <MudListItem Text="Модули" InitiallyExpanded="true">
+                                <ChildContent>
+                                    <MudText Typo="Typo.h5">Модули</MudText>
+                                </ChildContent>
+                                <NestedList>
+                                    @foreach (var module in _modules)
+                                    {
+                                        <MudListItem Text="@module.Name">
+                                            <NestedList>
+                                                <MudListItem Text="Уроки" DisableRipple="true">
+                                                    <MudTable Items="@module.Lessons" Style="width: 95%">
+                                                        <HeaderContent>
+                                                            <MudTh>Название урока</MudTh>
+                                                            <MudTh></MudTh>
+                                                            <MudTh></MudTh>
+                                                            <MudTh><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
+                                            
+                                                        </HeaderContent>
+                                                        <RowTemplate>
+                                                            <MudTd DataLabel="Название урока">@context.Name</MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenEditLessonDialog(module))">Редактировать</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenDeleteLessonDialog(module))">Удалить</MudButton></MudTd>
+                                                        </RowTemplate>
+                                                    </MudTable>
+                                                </MudListItem>
+                                            </NestedList>
+                                        </MudListItem>
+                                    }
+                                </NestedList>
+                            </MudListItem>
+                        </MudList>
+                    </MudItem>
+
+                    <MudItem xs="2" md="2" Class="ma-5">
+                        <MudButton Variant="Variant.Filled" OnClick="@OpenAddModuleDialog" Color="Color.Primary">Добавить модуль</MudButton>
+                    </MudItem>
+                </MudGrid>
             </MudItem>
         </MudGrid>
-        @if (isCreated())
-        {
-            <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
-                <MudItem xs="3" md="3">
-                    <MudButton OnClick="AddComponent" Class="mud-theme-primary">Добавить модуль</MudButton>
-                </MudItem>
-            </MudGrid>
-            <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
-                @foreach (var component in components)
-                {
-                    <MudItem xs="10" md="8">
-                        @component
-                    </MudItem>
-                    <MudDataGrid Items="@_lessons" Class="ma-15" Elevation="5" Square>
-                     <ToolBarContent>
-                         <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Уроки</MudText>
-                         <MudSpacer></MudSpacer>
-                         <MudButton Class="mud-theme-primary mr-10" OnClick="@OpenAddLessonDialog">Добавить урок</MudButton>
-                     </ToolBarContent>
-                     <Columns>
-                         <PropertyColumn Property="x => x.Name" Title="Название" />
-                         <TemplateColumn>
-                             <CellTemplate>
-                                 <MudButton Class="mud-theme-primary">Редактировать</MudButton>
-                             </CellTemplate>
-                         </TemplateColumn>
-                         <TemplateColumn>
-                             <CellTemplate>
-                                 <MudButton Class="mud-theme-primary">Удалить</MudButton>
-                             </CellTemplate>
-                         </TemplateColumn>
-                     </Columns>
-                 </MudDataGrid>
-                }
-            </MudGrid>
-        }
     </MudPaper>
 </MudGrid>
 
@@ -68,7 +67,8 @@
     private Course _course;
     private bool courseCreated = false;
     private string imageData;
-    private List<Lesson> _lessons;
+
+    private List<Module> _modules;
 
     private List<string> courseAccessibility = new List<string>()
     {
@@ -82,15 +82,33 @@
 
     protected override void OnInitialized()
     {
+        _selectedAccessibility = courseAccessibility[0];
         _course = new Course();
-        _lessons = new List<Lesson>();
+        _modules = new List<Module>();
+        //_modules = _course.Modules;
+
+        List<Lesson> testLesson = new List<Lesson>();
+        testLesson.Add(new Lesson(){Name = "Урок 1"});
+        testLesson.Add(new Lesson(){Name = "Урок 2"});
+        testLesson.Add(new Lesson(){Name = "Урок 3"});
+        testLesson.Add(new Lesson(){Name = "Урок 4"});
+
+        _modules.Add(new Module() { Name = "Модуль 1", Lessons = testLesson });
+        _modules.Add(new Module() { Name = "Модуль 2", Lessons = testLesson });
+        _modules.Add(new Module() { Name = "Модуль 3", Lessons = testLesson });
+        _modules.Add(new Module() { Name = "Модуль 4", Lessons = testLesson });
     }
 
-    private async Task OpenAddLessonDialog()
+    private void FillModules()
+    {
+        _modules = _course.Modules;    
+    }
+
+    private async Task OpenAddLessonDialog(Module module)
     {
         var parameters = new DialogParameters<AddLessonDialog>();
         parameters.Add(x => x.course, _course);
-        parameters.Add(x => x.module, _course.Modules.FirstOrDefault());
+        parameters.Add(x => x.module, module);
         var options = new DialogOptions { CloseOnEscapeKey = true};
         var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
 
@@ -98,23 +116,57 @@
 
         if (!res.Canceled)
         {
-            Module module = _course.Modules.FirstOrDefault();
-            _lessons = module.Lessons;
             StateHasChanged();
         }
     }
 
-    private void AddComponent()
+    private async Task OpenEditLessonDialog(Module module)
     {
-        components.Add(builder =>
+        var parameters = new DialogParameters<AddLessonDialog>();
+        parameters.Add(x => x.course, _course);
+        parameters.Add(x => x.module, module);
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
+
+        var res = await dialog.Result;
+
+        if (!res.Canceled)
         {
-            builder.OpenComponent(0, typeof(ModuleFormComponent));
-            builder.AddAttribute(1, "Course", _course);
-            builder.CloseComponent();
-        });
-        StateHasChanged();
+            StateHasChanged();
+        }
     }
 
+    private async Task OpenDeleteLessonDialog(Module module)
+    {
+        var parameters = new DialogParameters<AddLessonDialog>();
+        parameters.Add(x => x.course, _course);
+        parameters.Add(x => x.module, module);
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
+
+        var res = await dialog.Result;
+
+        if (!res.Canceled)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenAddModuleDialog()
+    {
+        var parameters = new DialogParameters<AddLessonDialog>();
+        parameters.Add(x => x.course, _course);
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<AddModuleDialog>("Добавление модуля", parameters, options);
+
+        var res = await dialog.Result;
+
+        if (!res.Canceled)
+        {
+            _modules = _course.Modules;
+            StateHasChanged();
+        }
+    }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -139,7 +191,7 @@
         bool success = false;
         try
         {
-            if (courseService.GetCourseByName(_course.Name) == null)
+            if (courseService.GetCourseByName(_course.Name) == null && !String.IsNullOrEmpty(_course.Name))
             {
                 await courseService.AddCourseAsync(_course);
                 success = true;
@@ -156,6 +208,12 @@
             snackBar.Add("Курс успешно создан!", Severity.Success);
             StateHasChanged();
         }
+
+        else if (String.IsNullOrEmpty(_course.Name))
+        {
+            snackBar.Add("Название курса не может быть пустым!", Severity.Error);
+        }
+
         else
         {
             snackBar.Add("Курс с таким названием уже существует!", Severity.Error);
