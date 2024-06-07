@@ -1,4 +1,5 @@
 ﻿@page "/profilePage"
+@using System.IO
 
 @inject UserService userService
 @inject ISnackbar snackbar
@@ -12,8 +13,22 @@
             <MudGrid Justify="Justify.Center" Style="align-items: center;">
                 <MudItem xs="6" md="6">
                     <MudStack>
-                        <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 ml-2" FullWidth="true">Сменить изображение</MudButton>
+                        @* <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="25" Class="rounded-lg" /> *@
+                        @* <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 ml-2" FullWidth="true">Сменить изображение</MudButton> *@
+                        
+                         @if (fileName != "" && fileName != null)
+                        {
+                            <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" "/>
+                        }
+                        @if (fileName == null)
+                         {
+                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                         }
+                        
+                        <label for="filePicker2" class="label">
+                            <span class="title"><img class="imgtool" src="Image.svg" alt="img"/></span>
+                                <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnSubmit" multiple></InputFile>
+                        </label>
                     </MudStack>
                 </MudItem>
             </MudGrid>
@@ -52,10 +67,19 @@
 
 @code {
     private User _currentUser = new User();
+    string fileName;
 
     protected override void OnInitialized()
     {
         _currentUser = userService.CurrentUser;
+        FileSystemService.RemoveFolder("imgUser");
+        
+        if (_currentUser.ImageName != null)
+        {
+            FileSystemService.DownloadToLocalByName(_currentUser.ImageName, "imgUser");
+            fileName = FileSystemService.GetNameOfDir("imgUser");
+            StateHasChanged();
+        }
     }
 
     private async Task SaveChanges()
@@ -67,6 +91,11 @@
 
                 _currentUser);
             success = true;
+            
+            if (fileName != "")
+            {
+                ConfirmImage(fileName);
+            }
         }
         catch (Exception ex)
         {
@@ -83,10 +112,47 @@
         }
     }
 
-    private void UploadFiles2(IBrowserFile file)
+    // private void UploadFiles2(IBrowserFile file)
+    // {
+    //
+    //     //TODO upload the files to the server
+    // }
+    
+    private async Task OnSubmit(InputFileChangeEventArgs e)
     {
+        String folder = "imgUser";
+        String pathFolder = $"/wwwroot/{folder}/";
+        FileSystemService.RemoveFolder(folder);
+        foreach (var file in e.GetMultipleFiles(e.FileCount))
+        {
+            try
+            {
+                Stream stream = file.OpenReadStream();
+                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
+                FileStream fs = File.Create(path);
+                await stream.CopyToAsync(fs);
+                stream.Close();
+                fs.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+    
+        fileName = FileSystemService.GetNameOfDir("imgUser");
+        // if (fileName != "")
+        // {
+        //     ConfirmImage(fileName);
+        // }
+        StateHasChanged();
+    }
 
-        //TODO upload the files to the server
+    void ConfirmImage(String filename)
+    {
+        FileSystemService.UploadImageToDb("imgUser");
+        _currentUser.ImageName = fileName;
+        userService.UpdateUserAsync(_currentUser);
     }
 
     private void Logout()
