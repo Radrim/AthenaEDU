@@ -24,7 +24,8 @@
         await base.OnInitializedAsync();
     }
 
-    private void Close() => MudDialog.Close();
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+    private void CloseBySave() => MudDialog.Close(DialogResult.Ok(_module));
 
     private async Task AddNewModule()
     {
@@ -34,9 +35,8 @@
         {
             if (!String.IsNullOrEmpty(_module.Name))
             {
-                await AddModule();
                 success = true;
-                Close();
+                CloseBySave();
             }
         }
         catch (Exception ex)
@@ -58,11 +58,5 @@
         {
             snackbar.Add("При создании модуля произошла ошибка!", Severity.Error);
         }
-    }
-
-    private async Task AddModule()
-    {
-        course.Modules.Add(_module);
-        await courseService.UpdateCourseAsync(course);
     }
 }

@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace AthenaEDU.Models
 {
-    public class LessonData
+    public class LessonFile
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

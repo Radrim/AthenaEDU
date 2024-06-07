@@ -36,7 +36,7 @@
 
     private async Task GetCategories()
     {
-        _categories = await categoryService.GetAllCategories();
+        _categories = await categoryService.GetAllCategoriesAsync();
     }
 
     private async Task OpenAddCategoryDialog()

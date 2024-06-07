@@ -1,0 +1,55 @@
+﻿@inject ISnackbar snackbar
+@inject CourseService courseService
+
+<MudForm Model="lesson">
+    <MudDialog>
+        <DialogContent>
+            <MudGrid Spacing="5" Class="mb-5">
+                <MudItem xs="8">
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Название" @bind-Value="lesson.Name" For="@(() => lesson.Name)"></MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText>Здесь будет файл</MudText>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveChanges">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Lesson lesson { get; set; }
+
+    private string fileName;
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+    private void CloseBySave() => MudDialog.Close(DialogResult.Ok(lesson));
+
+    private async Task SaveChanges()
+    {
+        bool success = false;
+
+        try
+        {
+            success = true;
+            CloseBySave();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при редактировании урока: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Урок успешно изменен!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("При редактировании урока произошла ошибка!", Severity.Error);
+        }
+    }
+}

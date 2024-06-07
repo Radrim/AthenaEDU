@@ -3,10 +3,12 @@
 @inject CourseService courseService
 @inject ISnackbar snackBar
 @inject IDialogService DialogService
+@inject UserService userService
+@inject CategoryService categoryService
 
 <PageTitle>Создание курса</PageTitle>
 
-<MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
+<MudGrid Justify="Justify.Center" Style="height: 85vh; width: 100vw;" Class="mt-10">
     <MudPaper Elevation="10" Style="width: 80%">
         <MudGrid Justify="Justify.FlexStart" Class="mt-5" Style="display: flex; align-items: center;">
             <MudItem xs="5" md="5">
@@ -25,6 +27,27 @@
 
             <MudItem xs="3" md="3">
                 <MudButton OnClick="CreateCourse" Variant="Variant.Filled" Size="Size.Large" Class="ml-12" Color="Color.Primary">Создать курс</MudButton>
+            </MudItem>
+
+            <MudItem xs="5" md="5">
+                    <MudTextField Label="Описание" Class="ml-10" Variant="Variant.Outlined" Lines="5" @bind-Value="_course.Description" />
+            </MudItem>
+
+            <MudItem xs="4" md="4" Class="mb-15">
+                <MudSelect @bind-Value="_selectedCategory" T="CourseCategory" Label="Категория" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                    @foreach (CourseCategory item in _categories)
+                    {
+                        <MudSelectItem Value="@item">@item.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="12">
+                <MudStack AlignItems="AlignItems.Start" Class="ml-10">
+                    <MudImage Src="images/defaultCourseImage.jpg" Alt="Course image" ObjectFit="ObjectFit.Cover" Height="150" Width="150" Elevation="5" Class="rounded-lg" />
+                    <InputFile>Выбрать</InputFile>
+                </MudStack>
             </MudItem>
 
             <MudItem xs="12" md="12">
@@ -51,7 +74,7 @@
                                                         </HeaderContent>
                                                         <RowTemplate>
                                                             <MudTd DataLabel="Название урока">@context.Name</MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenEditLessonDialog(module))">Редактировать</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenEditLessonDialog(module, context))">Редактировать</MudButton></MudTd>
                                                             <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
                                                         </RowTemplate>
                                                     </MudTable>
@@ -73,45 +96,37 @@
     </MudPaper>
 </MudGrid>
 
+
 @code {
-    private Course _course;
+    private Course _course = new Course();
     private bool courseCreated = false;
     private string imageData;
 
-    private List<Module> _modules;
-
+    private List<CourseCategory> _categories = new List<CourseCategory>();
+    private List<Module> _modules = new List<Module>();
     private List<string> courseAccessibility = new List<string>()
     {
         "Открытый",
         "Приватный"
     };
-
     private string _selectedAccessibility;
-
+    private CourseCategory _selectedCategory;
     private List<RenderFragment> components = new List<RenderFragment>();
 
     protected override void OnInitialized()
     {
         _selectedAccessibility = courseAccessibility[0];
-        _course = new Course();
-        _modules = new List<Module>();
-        //_modules = _course.Modules;
+        FillCategories();
 
         List<Lesson> testLesson = new List<Lesson>();
         testLesson.Add(new Lesson(){Name = "Урок 1"});
-        testLesson.Add(new Lesson(){Name = "Урок 2"});
-        testLesson.Add(new Lesson(){Name = "Урок 3"});
-        testLesson.Add(new Lesson(){Name = "Урок 4"});
 
         _modules.Add(new Module() { Name = "Модуль 1", Lessons = testLesson });
-        _modules.Add(new Module() { Name = "Модуль 2", Lessons = testLesson });
-        _modules.Add(new Module() { Name = "Модуль 3", Lessons = testLesson });
-        _modules.Add(new Module() { Name = "Модуль 4", Lessons = testLesson });
     }
 
-    private void FillModules()
+    private async Task FillCategories()
     {
-        _modules = _course.Modules;    
+        _categories = await categoryService.GetAllCategoriesAsync();
     }
 
     private async Task OpenConfirmationDialog(Module module, Lesson lesson)
@@ -141,53 +156,44 @@
 
         if (!res.Canceled)
         {
+            module.Lessons.Add((res.Data as Lesson));
             StateHasChanged();
         }
     }
 
-    private async Task OpenEditLessonDialog(Module module)
+    private async Task OpenEditLessonDialog(Module module, Lesson lesson)
     {
-        var parameters = new DialogParameters<AddLessonDialog>();
-        parameters.Add(x => x.course, _course);
-        parameters.Add(x => x.module, module);
+        Lesson currentLesson = new Lesson() { Name = lesson.Name, LessonFile = lesson.LessonFile};
+        var parameters = new DialogParameters<EditLessonDialog>();
+        parameters.Add("lesson", currentLesson);
         var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
+        var dialog = await DialogService.Show<EditLessonDialog>("Редактирование урока", parameters, options).Result;
 
-        var res = await dialog.Result;
-
-        if (!res.Canceled)
+        if (!dialog.Canceled)
         {
-            StateHasChanged();
+            var newLesson = dialog.Data as Lesson;
+            var oldLessonIndex = module.Lessons.FindIndex(l => l == lesson);
+
+            if (oldLessonIndex >= 0)
+            {
+                module.Lessons[oldLessonIndex] = newLesson;
+                StateHasChanged();
+            }
         }
     }
 
     private async Task OpenAddModuleDialog()
     {
-        var parameters = new DialogParameters<AddLessonDialog>();
-        parameters.Add(x => x.course, _course);
+        var parameters = new DialogParameters();
+        parameters.Add("course", _course);
         var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = await DialogService.ShowAsync<AddModuleDialog>("Добавление модуля", parameters, options);
+        var dialog = await DialogService.Show<AddModuleDialog>("Добавление модуля", parameters, options).Result;
 
-        var res = await dialog.Result;
-
-        if (!res.Canceled)
+        if (!dialog.Canceled)
         {
-            _modules = _course.Modules;
+            _modules.Add((dialog.Data as Module));
             StateHasChanged();
         }
-    }
-
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        var format = "image/png,jpg";
-        var resizedImage = await file.RequestImageFileAsync(format, 100, 100);
-        var buffer = new byte[resizedImage.Size];
-        await resizedImage.OpenReadStream().ReadAsync(buffer);
-        imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-        // Here you would send the imageData to your server and get the image URL
-        // For example, you could use HttpClient to send the image to your server
-        // and get the image URL to store in your MongoDB document
     }
 
     private bool isCreated()
@@ -195,13 +201,31 @@
         return courseCreated;
     }
 
+    private bool isPrivate()
+    {
+        switch (_selectedAccessibility)
+        {
+            case "Приватный":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private async Task CreateCourse()
     {
         bool success = false;
         try
         {
-            if (courseService.GetCourseByName(_course.Name) == null && !String.IsNullOrEmpty(_course.Name))
+            if (courseService.GetCourseByName(_course.Name) == null && !String.IsNullOrEmpty(_course.Name) && _selectedCategory != null)
             {
+                _course.Author = userService.CurrentUser.Name;
+                _course.isPrivate = isPrivate();
+                _course.Modules = _modules;
+                _course.Category = _selectedCategory;
+
+                
+
                 await courseService.AddCourseAsync(_course);
                 success = true;
                 courseCreated = true;
@@ -221,6 +245,11 @@
         else if (String.IsNullOrEmpty(_course.Name))
         {
             snackBar.Add("Название курса не может быть пустым!", Severity.Error);
+        }
+
+        else if (_selectedCategory == null)
+        {
+            snackBar.Add("Необходимо выбрать категорию!", Severity.Error);
         }
 
         else

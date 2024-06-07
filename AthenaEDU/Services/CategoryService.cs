@@ -18,7 +18,7 @@ namespace AthenaEDU.Services
             await _categories.InsertOneAsync(categories);
         }
 
-        public async Task<List<CourseCategory>> GetAllCategories()
+        public async Task<List<CourseCategory>> GetAllCategoriesAsync()
         {
             return await _categories.FindAsync(new BsonDocument()).Result.ToListAsync();
         }

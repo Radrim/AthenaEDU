@@ -43,5 +43,18 @@ namespace AthenaEDU.Services
                 _courses.ReplaceOne(x => x.Id == course.Id, course);
             }
         }
+
+        public async Task<List<Course>> FindBySearchCourses(string searchText)
+        {
+            var allCourses = await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
+
+            // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
+            var filteredCourses = await Task.Run(() =>
+            {
+                return allCourses.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            });
+
+            return filteredCourses;
+        }
     }
 }

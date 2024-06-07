@@ -1,7 +1,69 @@
 ﻿@page "/courseRequest"
 
-<h3>CourseRequestPage</h3>
+<PageTitle>Заявки</PageTitle>
+
+@using System.ComponentModel.DataAnnotations;
+@inject CourseService courseService
+
+<MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%">
+    <MudPaper Elevation="5" Width="70%">
+        <MudGrid Justify="Justify.SpaceAround" Style="display: flex; align-items: center;" Class="mt-5">
+            <MudItem xs="6" md="6">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudTextField Variant="Variant.Outlined" T="string" Label="Search" Class="px-3" AdornmentIcon="@Icons.Material.Filled.Search"></MudTextField>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary">Искать</MudButton>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="4" md="4">
+                <MudSelect T="string" Label="Фильтрация по категории:" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                    <MudSelectItem Value="@("IT")" />
+                    <MudSelectItem Value="@("Бизнес и менеджемент")" />
+                    <MudSelectItem Value="@("Технологии и инновации")" />
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Justify="Justify.SpaceEvenly" Style="display: flex; align-items: center;" Class="mt-5">
+            @foreach (var item in Courses)
+            {
+                <MudItem xs="12" md="12">
+                    <MudPaper Class="mr-5 ml-5" Elevation="2">
+                        <MudStack Row="true">
+                            <MudImage Src="/Svet.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Fill"></MudImage>
+                            <MudStack Class="mr-2 ml-2 mt-2">
+                                <MudText Typo="Typo.h5" Style="font-weight: bold">@item.Name</MudText>
+                                <MudStack Row="true">
+                                    <MudText Typo="Typo.h6">Автор: @item.Author</MudText>
+                                    @* <MudText Typo="Typo.h6">Категория: @item.Category.Name</MudText> *@
+                                </MudStack>
+                                <MudText Typo="Typo.h5">@item.Description</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
+</MudGrid>
 
 @code {
+    private string courseName;
+    List<Course> Courses = new List<Course>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await FillCourses();
+    }
+
+    private void Change()
+    {
+        Courses[0].Name = "Кек";
+    }
+
+    private async Task FillCourses()
+    {
+        Courses = await courseService.GetAllCourses();
+    }
 }
+

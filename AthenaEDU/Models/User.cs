@@ -20,7 +20,7 @@ namespace AthenaEDU.Models
 
         public User() { }
 
-        public User(string name, string surname, string patronymic, string email, string password)
+        public User(string name, string surname, string patronymic, string email, string password) 
         {
             Name = name;
             Surname = surname;

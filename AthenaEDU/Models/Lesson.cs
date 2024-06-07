@@ -9,14 +9,8 @@ namespace AthenaEDU.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string Name { get; set; }
-        public List<LessonData> LessonDatas { get; private set; } = new List<LessonData>();
+        public LessonFile LessonFile { get; set; }
 
         public Lesson() { }
-
-        public Lesson(string name, List<LessonData> lessonData)
-        {
-            Name = name;
-            LessonDatas = lessonData;
-        }
     }
 }
