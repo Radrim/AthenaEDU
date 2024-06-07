@@ -1,10 +1,6 @@
 ﻿using MongoDB.Driver.GridFS;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using AthenaEDU.Models;
-using AthenaEDU.Services;
 
-namespace ClothingStore.Services
+namespace AthenaEDU.Services
 {
     public class FileSystemService
     {
@@ -12,7 +8,7 @@ namespace ClothingStore.Services
         public FileSystemService(MongoDBConnection connection) {
             _connection = connection;
         }
-        public static async Task UploadImageToDbAsync(Stream fs, string name)
+        /*public static async Task UploadImageToDbAsync(Stream fs, string name)
         {
             var gridFS = new GridFSBucket(_connection.database);
 
@@ -26,6 +22,6 @@ namespace ClothingStore.Services
             {
                 gridFS.DownloadToStreamByName(name, fs);
             }
-        }
+        }*/
     }
 }

@@ -1,9 +1,9 @@
-using AthenaEDU.Interfaces;
 using AthenaEDU.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using MudBlazor.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +15,8 @@ builder.Services.AddSingleton<MongoDBConnection>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<CourseService>();
 builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 //builder.Services.AddSingleton<WeatherForecastService>();
 
 

@@ -8,13 +8,23 @@
 
 <MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
     <MudPaper Elevation="10" Style="width: 80%">
-        <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
-            <MudItem xs="6" md="5">
-                <MudTextField T="string" @bind-Value="_course.Name" For="@(() => _course.Name)" Variant="Variant.Outlined" Label="Название курса"></MudTextField>
+        <MudGrid Justify="Justify.FlexStart" Class="mt-5" Style="display: flex; align-items: center;">
+            <MudItem xs="5" md="5">
+                <MudTextField Class="ml-10" T="string" @bind-Value="_course.Name" For="@(() => _course.Name)" Variant="Variant.Outlined" Label="Название курса"></MudTextField>
+            </MudItem>
+
+            <MudItem xs="4" md="4">
+                <MudSelect @bind-Value="_selectedAccessibility" T="string" Label="Доступность курса" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                    @foreach (string item in courseAccessibility)
+                    {
+                        <MudSelectItem Value="@item" />
+                    }
+                </MudSelect>
             </MudItem>
 
             <MudItem xs="3" md="3">
-                <MudButton OnClick="CreateCourse" Class="mud-theme-primary">Создать курс</MudButton>
+                <MudButton OnClick="CreateCourse" Variant="Variant.Filled" Size="Size.Large" Class="ml-12" Color="Color.Primary">Создать курс</MudButton>
             </MudItem>
 
             <MudItem xs="12" md="12">
@@ -109,7 +119,7 @@
         var dialogParameters = new DialogParameters();
         dialogParameters.Add("Action", "Delete");
 
-        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall};
 
         var dialogResult = await DialogService.Show<ConfirmDialog>("Удаление", dialogParameters, dialogOptions).Result;
 
@@ -125,9 +135,8 @@
         var parameters = new DialogParameters<AddLessonDialog>();
         parameters.Add(x => x.course, _course);
         parameters.Add(x => x.module, module);
-        var options = new DialogOptions { CloseOnEscapeKey = true};
+        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth = true};
         var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
-
         var res = await dialog.Result;
 
         if (!res.Canceled)

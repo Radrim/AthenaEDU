@@ -1,10 +1,36 @@
 ﻿@inject ISnackbar snackbar
 @inject CourseService courseService
+@inject HttpClient Http
 
 <MudForm Model="_model">
     <MudDialog>
         <DialogContent>
-            <MudTextField T="string" Label="Название" @bind-Value="_model.Name" For="@(() => _model.Name)"></MudTextField>
+            <MudGrid Spacing="5" Class="mb-5">
+                <MudItem xs="8">
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Название" @bind-Value="_model.Name" For="@(() => _model.Name)"></MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6">Добавить лекцию</MudText>
+                    <MudFileUpload T="IBrowserFile" Accept=".pdf,.txt,.docx" AppendMultipleFiles="false" MaxFileSize="10485760" OnFilesChanged="@UploadFile">
+                        <ButtonTemplate>
+                            <MudButton HtmlTag="label"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                                       for="@context.Id">
+                                       Выбрать документ
+                            </MudButton>
+                        </ButtonTemplate>
+                    </MudFileUpload>
+                    @if (!String.IsNullOrEmpty(fileName))
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon>
+                            <MudText>@fileName</MudText>
+                        </MudStack>
+                    }
+                </MudItem>
+            </MudGrid>
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="@Close">Отмена</MudButton>
@@ -19,6 +45,8 @@
     [Parameter] public Module module { get; set; }
 
     private Lesson _model;
+    private string fileName;
+
 
     protected async override Task OnInitializedAsync()
     {
@@ -57,5 +85,56 @@
     {
         module.Lessons.Add(_model);
         courseService.ReplaceModuleAsync(course, module);
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        var format = Path.GetExtension(file.Name);
+
+        if (file != null && (format == ".pdf" || format == ".txt" || format == ".docx"))
+        {
+            var stream = file.OpenReadStream(maxAllowedSize: 10485760); // Максимальный размер файла 10MB
+            var fileBytes = new byte[stream.Length];
+            await stream.ReadAsync(fileBytes, 0, (int)stream.Length);
+
+            fileName = file.Name;
+
+            await UploadToDatabase(fileBytes, file.Name);
+        }
+        else
+        {
+            // Обработка ошибки, если файл не выбран или неверный формат
+            Console.WriteLine("Ошибка: файл не выбран или неверный формат");
+        }
+    }
+
+    private async Task UploadToDatabase(byte[] fileBytes, string fileName)
+    {
+        var LessonData = new LessonData
+            {
+                FileName = fileName,
+                FileContent = fileBytes
+            };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/upload", LessonData);
+            if (response.IsSuccessStatusCode)
+            {
+                // Обработка успеха загрузки файла
+                Console.WriteLine("Файл успешно загружен");
+            }
+            else
+            {
+                // Обработка ошибки загрузки файла
+                Console.WriteLine("Ошибка при загрузке файла");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Обработка общей ошибки, например, если сервер недоступен
+            Console.WriteLine($"Произошла ошибка: {ex.Message}");
+        }
     }
 }
