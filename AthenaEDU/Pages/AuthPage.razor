@@ -28,6 +28,13 @@
 @code {
     LoginCredentials model = new LoginCredentials();
 
+    protected override Task OnInitializedAsync()
+    {
+        model.Email = "rockstar.ggk3@gmail.com";
+        model.Password = "111111";
+        return base.OnInitializedAsync();
+    }
+
     private async Task OnValidSubmit(EditContext context)
     {
         bool success = false;
