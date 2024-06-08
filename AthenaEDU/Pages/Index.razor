@@ -5,7 +5,7 @@
 @inject CategoryService categoryService
 
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
-    <MudPaper Elevation="5" Width="70%">
+    <MudPaper Elevation="5" Width="70%" Class="pb-10">
         <MudGrid Justify="Justify.SpaceAround" Style="display: flex; align-items: center;" Class="mt-5">
             <MudItem xs="6" md="6">
                 <MudStack Row="true" AlignItems="AlignItems.Center">
@@ -15,7 +15,7 @@
             </MudItem>
             <MudItem xs="4" md="4">
                 <MudSelect T="string" @bind-Value="selectedCategory" For="@(() => selectedCategory)" Label="Фильтрация по категории:" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
-                           Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
+                           Variant="Variant.Filled" AdornmentColor="Color.Primary" TextChanged="@FilterCourses" Class="mud-theme-secondary">
                     @foreach (var item in courseCategories)
                     {
                         <MudSelectItem Value="@item.Name">@item.Name</MudSelectItem>
@@ -28,19 +28,30 @@
             @foreach (var item in Courses)
             {
                 <MudItem xs="12" md="12">
+                    <NavLink href="@($"/courseMainPage/{item.Id}")">
                     <MudPaper Class="mr-5 ml-5" Elevation="2">
                         <MudStack Row="true">
-                            <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover"></MudImage>
+
+                            @if (item.ImageName != "" && item.ImageName != null)
+                            {
+                                <img style="height: 200px; width: 200px; background: rgba(128,128,128,0.06); border-radius: 15px;" class="userImg" src="imgUser/@item.ImageName" alt=" " />
+                            }
+                            @if (item.ImageName == null)
+                            {
+                                <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
+                            }
+                            
                             <MudStack Class="mr-2 ml-2 mt-2">
                                 <MudText Typo="Typo.h5" Style="font-weight: bold">@item.Name</MudText>
                                 <MudStack Row="true">
-                                    <MudText Typo="Typo.h6">Автор: @item.Author</MudText>
-                                    @* <MudText Typo="Typo.h6">Категория: @item.Category.Name</MudText> *@
+                                    <MudText Typo="Typo.body1"><b>Автор:</b> @item.Author</MudText>
+                                    <MudText Typo="Typo.body1"><b>Категория:</b> @item.Category.Name</MudText>
                                 </MudStack>
-                                <MudText Typo="Typo.h5">@item.Description</MudText>
+                                <MudText Typo="Typo.body1">@item.Description</MudText>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
+                    </NavLink>
                 </MudItem>
             }
         </MudGrid>
@@ -55,14 +66,34 @@
 
     private async Task PerformSearch()
     {
-        if (!String.IsNullOrEmpty(searchText))
+        if (!string.IsNullOrEmpty(selectedCategory))
         {
-            Courses = await courseService.FindBySearchCourses(searchText);
-        }
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                Courses = await courseService.FindByCategoryAndSearchCourses(selectedCategory, searchText);
+            }
 
+            else
+            {
+                Courses = await courseService.FindByCategoryCourses(selectedCategory);
+            }
+        }
         else
         {
-            Courses = await FillCourses();    
+            Courses = await FillCourses();
+        }
+
+        if (!string.IsNullOrEmpty(searchText))
+        {
+            if (!string.IsNullOrEmpty(selectedCategory))
+            {
+                Courses = await courseService.FindByCategoryAndSearchCourses(selectedCategory, searchText);
+            }
+
+            else
+            {
+                Courses = Courses.Where(c => c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
         }
 
         StateHasChanged();
@@ -72,6 +103,41 @@
     {
         courseCategories = await categoryService.GetAllCategoriesAsync();
         Courses = await FillCourses();
+    }
+
+    private async Task FilterCourses(string categoryName)
+    {
+        if (!string.IsNullOrEmpty(categoryName))
+        {
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                Courses = await courseService.FindByCategoryAndSearchCourses(categoryName, searchText);
+            }
+
+            else
+            {
+                Courses = await courseService.FindByCategoryCourses(categoryName);
+            }
+        }
+        else
+        {
+            Courses = await FillCourses();
+        }
+
+        if (!string.IsNullOrEmpty(searchText))
+        {
+            if (!string.IsNullOrEmpty(categoryName))
+            {
+                Courses = await courseService.FindByCategoryAndSearchCourses(categoryName, searchText);
+            }
+
+            else
+            {
+                Courses = Courses.Where(c => c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+        }
+
+        StateHasChanged();
     }
 
     private async Task<List<Course>> FillCourses()

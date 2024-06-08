@@ -44,9 +44,20 @@
             </MudItem>
 
             <MudItem xs="12" md="12">
-                <MudStack AlignItems="AlignItems.Start" Class="ml-10">
-                    <MudImage Src="images/defaultCourseImage.jpg" Alt="Course image" ObjectFit="ObjectFit.Cover" Height="150" Width="150" Elevation="5" Class="rounded-lg" />
-                    <InputFile>Выбрать</InputFile>
+                <MudStack AlignItems="AlignItems.End" Class="ml-10" Row="true">
+                    @if (fileName != "" && fileName != null)
+                    {
+                        <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
+                    }
+                    @if (fileName == null)
+                    {
+                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                    }
+
+                    <label for="filePicker2" class="label">
+                        <span class="title"><img class="imgtool" src="Image.svg" alt="img" /></span>
+                        <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnSubmit" multiple></InputFile>
+                    </label>
                 </MudStack>
             </MudItem>
 
@@ -56,7 +67,7 @@
                         <MudList Clickable="true" Color="Color.Secondary">
                             <MudListItem Text="Модули" InitiallyExpanded="true">
                                 <ChildContent>
-                                    <MudText Typo="Typo.h5">Модули</MudText>
+                                    <MudText Typo="Typo.h4">Модули</MudText>
                                 </ChildContent>
                                 <NestedList>
                                     @foreach (var module in _modules)
@@ -101,6 +112,7 @@
     private Course _course = new Course();
     private bool courseCreated = false;
     private string imageData;
+    private string fileName;
 
     private List<CourseCategory> _categories = new List<CourseCategory>();
     private List<Module> _modules = new List<Module>();
@@ -117,6 +129,16 @@
     {
         _selectedAccessibility = courseAccessibility[0];
         FillCategories();
+
+        FileSystemService.RemoveFolder("imgCourse");
+
+        if (_course.ImageName != null)
+        {
+            FileSystemService.DownloadToLocalByName(_course.ImageName, "imgCourse");
+            fileName = FileSystemService.GetNameOfDir("imgCourse");
+            StateHasChanged();
+        }
+
 
         List<Lesson> testLesson = new List<Lesson>();
         testLesson.Add(new Lesson(){Name = "Урок 1"});
@@ -196,11 +218,6 @@
         }
     }
 
-    private bool isCreated()
-    {
-        return courseCreated;
-    }
-
     private bool isPrivate()
     {
         switch (_selectedAccessibility)
@@ -219,7 +236,7 @@
         {
             if (courseService.GetCourseByName(_course.Name) == null && !String.IsNullOrEmpty(_course.Name) && _selectedCategory != null)
             {
-                _course.Author = userService.CurrentUser.Name;
+                _course.Author = userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic;
                 _course.isPrivate = isPrivate();
                 _course.Modules = _modules;
                 _course.Category = _selectedCategory;
@@ -228,7 +245,11 @@
 
                 await courseService.AddCourseAsync(_course);
                 success = true;
-                courseCreated = true;
+
+                if (fileName != "")
+                {
+                    ConfirmImage(fileName);
+                }
             }
         }
         catch (Exception ex)
@@ -256,5 +277,38 @@
         {
             snackBar.Add("Курс с таким названием уже существует!", Severity.Error);
         }
+    }
+
+    private async Task OnSubmit(InputFileChangeEventArgs e)
+    {
+        String folder = "imgCourse";
+        String pathFolder = $"/wwwroot/{folder}/";
+        FileSystemService.RemoveFolder(folder);
+        foreach (var file in e.GetMultipleFiles(e.FileCount))
+        {
+            try
+            {
+                Stream stream = file.OpenReadStream();
+                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
+                FileStream fs = File.Create(path);
+                await stream.CopyToAsync(fs);
+                stream.Close();
+                fs.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        fileName = FileSystemService.GetNameOfDir("imgCourse");
+        StateHasChanged();
+    }
+
+    private void ConfirmImage(String filename)
+    {
+        FileSystemService.UploadImageToDb("imgCourse");
+        _course.ImageName = fileName;
+        courseService.UpdateCourseAsync(_course);
     }
 }

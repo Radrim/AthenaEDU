@@ -1,6 +1,7 @@
 ﻿using AthenaEDU.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace AthenaEDU.Services
 {
@@ -21,6 +22,11 @@ namespace AthenaEDU.Services
         public Course GetCourseByName(string name)
         {
             return _courses.Find(x => x.Name == name).FirstOrDefault();
+        }
+
+        public Course GetCourseById(string id)
+        {
+            return _courses.Find(x => x.Id == id).FirstOrDefault();
         }
 
         public async Task UpdateCourseAsync(Course course)
@@ -52,6 +58,32 @@ namespace AthenaEDU.Services
             var filteredCourses = await Task.Run(() =>
             {
                 return allCourses.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            });
+
+            return filteredCourses;
+        }
+
+        public async Task<List<Course>> FindByCategoryCourses(string categoryName)
+        {
+            var allCourses = await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
+
+            // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
+            var filteredCourses = await Task.Run(() =>
+            {
+                return allCourses.Where(x => x.Category.Name == categoryName).ToList();
+            });
+
+            return filteredCourses;
+        }
+
+        public async Task<List<Course>> FindByCategoryAndSearchCourses(string categoryName, string searchText)
+        {
+            var allCourses = await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
+
+            // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
+            var filteredCourses = await Task.Run(() =>
+            {
+                return allCourses.Where(x => x.Category.Name == categoryName && x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
             });
 
             return filteredCourses;

@@ -1,54 +1,90 @@
-﻿@page "/courseMainPage/{courseName}"
+﻿@page "/courseMainPage/{courseId}"
+@using MongoDB.Bson
 
 @inject CourseService courseService
 
-<PageTitle>Главная страница курса</PageTitle>
+<PageTitle>@_course.Name</PageTitle>
 
-<MudGrid Justify="Justify.Center" Style="height: 80vh; width: 100vw;" Class="mt-10">
-    <MudPaper Elevation="10" Style="width: 60%">
-        <MudGrid Justify="Justify.Center" Class="mt-5" Style="display: flex; align-items: center;">
-            <MudItem xs="6" md="8">
-                <MudTextField T="string" @bind-Value="@_course.Name"  Variant="Variant.Outlined" Label="Название курса"></MudTextField>
-                <MudImage Src="/Svet.jpg" Fluid="true" />
+<MudGrid Justify="Justify.Center" Style="height: 85vh; width: 100vw;" Class="mt-10">
+    <MudPaper Elevation="10" Style="width: 80%">
+        <MudGrid Justify="Justify.FlexStart" Class="mt-5">
+            <MudItem xs="3" md="3">
+                <MudStack Class="ml-10" Row="true">
+                    @if (_course.ImageName != "" && _course.ImageName != null)
+                    {
+                        <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@_course.ImageName" alt=" " />
+                    }
+                    @if (_course.ImageName == null)
+                    {
+                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                    }
+                </MudStack>
             </MudItem>
-            <MudItem xs="6" md="8">
-                <MudDataGrid Items="@_course.Modules">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Модули</MudText>
-                    </ToolBarContent>
-                        <Columns>
-                            <PropertyColumn Property="x => x.Name" Title="Название модуля" />
-                            <TemplateColumn>
-                                <CellTemplate>
-                                    <MudList>
-                                        <MudListItem Text="Уроки">
+
+            <MudItem xs="4" md="4">
+                <MudStack Spacing="4">
+                    <MudField Label="Автор" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Author</MudField>
+                    <MudField Label="Категория" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Category.Name</MudField>
+                    <MudField Label="Описание" Variant="Variant.Outlined" Adornment="Adornment.Start">@_course.Description</MudField>
+                </MudStack>
+            </MudItem>
+
+            <MudItem xs="3" md="3">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-4 ml-10" FullWidth="true">
+                    <MudText Color="Color.Primary" Typo="Typo.button">Подключиться</MudText>
+                </MudButton>
+            </MudItem>
+
+            <MudItem xs="12" md="12">
+                <MudGrid Style="display: flex; justify-content: space-between;">
+                    <MudItem xs="9" md="9" Class="ma-2 ml-5">
+                        <MudList Clickable="true" Color="Color.Secondary">
+                            <MudListItem Text="Модули" InitiallyExpanded="true">
+                                <ChildContent>
+                                    <MudText Typo="Typo.h4">Модули</MudText>
+                                </ChildContent>
+                                <NestedList>
+                                    @foreach (var module in _course.Modules)
+                                    {
+                                        <MudListItem Text="@module.Name">
                                             <NestedList>
-                                                @foreach(var item in lessons)
+                                                @foreach(var lesson in module.Lessons)
                                                 {
-                                                    <MudListItem>@item.Name</MudListItem>
+                                                    <MudListItem Text="@lesson.Name" DisableRipple="true">
+                                                        <MudGrid>
+                                                            <MudItem xs="4" md="4" Class="ml-10">
+                                                                <MudText Typo="Typo.body1">@lesson.Name</MudText>
+                                                            </MudItem>
+                                                            <MudItem xs="7" md="7">
+                                                                <MudNavLink><MudText Typo="Typo.h6">Здесь файл</MudText></MudNavLink>@* Отображение, скачиваемого файла *@
+                                                            </MudItem>
+                                                        </MudGrid>
+                                                    </MudListItem>
                                                 }
-                                        </NestedList>
-                                    </MudListItem>
-                                    </MudList>
-                                </CellTemplate>
-                            </TemplateColumn>
-                        </Columns>
-                </MudDataGrid>
+                                            </NestedList>
+                                        </MudListItem>
+                                    }
+                                </NestedList>
+                            </MudListItem>
+                        </MudList>
+                    </MudItem>
+                </MudGrid>
             </MudItem>
         </MudGrid>
     </MudPaper>
 </MudGrid>
 
+
 @code {
     [Parameter]
-    public string courseName { get; set; }
+    public string courseId { get; set; }
     private Course _course;
     private List<Lesson> lessons;
 
     protected override void OnInitialized()
     {
         // Здесь вы можете использовать параметр Id
-        _course = courseService.GetCourseByName(courseName);
+        _course = courseService.GetCourseById(courseId);
         var module = _course.Modules.FirstOrDefault();
         if (module != null)
         {
