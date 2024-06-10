@@ -27,5 +27,10 @@ namespace AthenaEDU.Services
         {
             await _categories.DeleteOneAsync(x => x.Name == title);
         }
+
+        public async Task UpdateCategoryAsync(CourseCategory category)
+        {
+            await _categories.ReplaceOneAsync(x => x.Id == category.Id, category);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿@page "/courseMainPage/{courseId}"
+﻿@page "/courseMainRequestPage/{courseId}"
 @using MongoDB.Bson
 
 @inject CourseService courseService
@@ -19,40 +19,33 @@
                     }
                     @if (_course.ImageName == null)
                     {
-                        
+                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
                     } *@
-
                     <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
                 </MudStack>
             </MudItem>
 
             <MudItem xs="4" md="4">
                 <MudStack Spacing="4">
-                    <MudField Label="Название" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Name</MudField>
                     <MudField Label="Автор" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Author</MudField>
                     <MudField Label="Категория" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Category.Name</MudField>
                     <MudField Label="Описание" Variant="Variant.Outlined" Adornment="Adornment.Start">@_course.Description</MudField>
                 </MudStack>
             </MudItem>
 
-            @if (userService.CurrentUser != null && activeCourses != null)
+            @if (userService.CurrentUser != null)
             {
-                @if (userService.CurrentUser.Role == "User")
-                {
-                        <MudItem xs="3" md="3">
-                            <MudButton Variant="Variant.Outlined"
-                                       OnClick="@(() => isActive ? JoinToCourse() : ExitFromCourse())"
-                                       Color="Color.Primary"
-                                       Class="mt-4 ml-10"
-                                       FullWidth="true">
-                                <MudText Color="Color.Primary" Typo="Typo.button">
-                                    @(isActive ? "Поcтупить на курс" : "Покинуть")
-                                </MudText>
-                            </MudButton>
-                        </MudItem>
-                }
+                <MudItem xs="3" md="3">
+                    <MudStack>
+                        <MudButton Variant="Variant.Outlined" OnClick="AcceptRequest" Color="Color.Primary" Class="mt-4 ml-10" FullWidth="true">
+                            <MudText Color="Color.Primary" Typo="Typo.button">Принять</MudText>
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" OnClick="DeclineRequest" Color="Color.Primary" Class="mt-4 ml-10" FullWidth="true">
+                            <MudText Color="Color.Primary" Typo="Typo.button">Отклонить</MudText>
+                        </MudButton>
+                    </MudStack>
+                </MudItem>
             }
-
             <MudItem xs="12" md="12">
                 <MudGrid Style="display: flex; justify-content: space-between;">
                     <MudItem xs="9" md="9" Class="ma-2 ml-5">
@@ -66,7 +59,7 @@
                                     {
                                         <MudListItem Text="@module.Name">
                                             <NestedList>
-                                                @foreach(var lesson in module.Lessons)
+                                                @foreach (var lesson in module.Lessons)
                                                 {
                                                     <MudListItem Text="@lesson.Name" DisableRipple="true">
                                                         <MudGrid>
@@ -97,7 +90,7 @@
     [Parameter]
     public string courseId { get; set; }
     private Course _course;
-    private bool isActive = false;
+    private List<Lesson> lessons;
     List<Course> activeCourses;
 
     protected override async Task OnInitializedAsync()
@@ -106,7 +99,22 @@
         {
             await GetActiveCourses();
         }
-        StateHasChanged();
+    }
+
+    private async Task AcceptRequest()
+    {
+        _course.isPublished = true;
+        await courseService.UpdateCourseAsync(_course);
+        navigationManager.NavigateTo("/");
+        snackbar.Add("Заявка одобрена!", Severity.Success);
+    }
+
+    private async Task DeclineRequest()
+    {
+        _course.isPublished = false;
+        await courseService.UpdateCourseAsync(_course);
+        navigationManager.NavigateTo("/");
+        snackbar.Add("Заявка отклонена!", Severity.Success);
     }
 
     private async Task GetActiveCourses()
@@ -114,16 +122,16 @@
         activeCourses = await userService.GetActiveCourses(userService.CurrentUser.Id);
     }
 
-    private void IsActive()
+    private bool IsActive()
     {
-        if (userService.CurrentUser.ActiveCourses.Contains(_course))
+        if (activeCourses != null && activeCourses.Contains(_course))
         {
-            isActive = true;
+            return true;
         }
 
         else
         {
-            isActive = false;
+            return false;
         }
     }
 
@@ -131,20 +139,10 @@
     {
         // Здесь вы можете использовать параметр Id
         _course = courseService.GetCourseById(courseId);
-    }
-
-    private async Task JoinToCourse()
-    {
-        userService.CurrentUser.ActiveCourses.Add(_course);
-        await userService.UpdateUserAsync(userService.CurrentUser);
-        snackbar.Add("Вы успешно вступили в курс!", Severity.Success);
-        navigationManager.NavigateTo("/myCoursePage", forceLoad: true);
-    }
-
-    private async Task ExitFromCourse()
-    {
-        userService.CurrentUser.ActiveCourses.Remove(_course);
-        await userService.UpdateUserAsync(userService.CurrentUser);
-        snackbar.Add("Вы успешно покинули курс!", Severity.Success);
+        var module = _course.Modules.FirstOrDefault();
+        if (module != null)
+        {
+            lessons = module.Lessons;
+        }
     }
 }

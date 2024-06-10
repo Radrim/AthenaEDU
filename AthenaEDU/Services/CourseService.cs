@@ -39,6 +39,18 @@ namespace AthenaEDU.Services
             return await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
         }
 
+        public async Task<List<Course>> GetAllPublishedCourses()
+        {
+            var filter = Builders<Course>.Filter.Eq(c => c.isPublished, true);
+            return await _courses.Find(filter).ToListAsync();
+        }
+
+        public async Task<List<Course>> GetAllUnpublishedCourses()
+        {
+            var filter = Builders<Course>.Filter.Eq(c => c.isPublished, false);
+            return await _courses.Find(filter).ToListAsync();
+        }
+
         public void ReplaceModuleAsync(Course course, Module module) 
         {
             int index = course.Modules.FindIndex(x => x.Id == module.Id);
@@ -57,7 +69,7 @@ namespace AthenaEDU.Services
             // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
             var filteredCourses = await Task.Run(() =>
             {
-                return allCourses.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                return allCourses.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) && x.isPublished == true).ToList();
             });
 
             return filteredCourses;
@@ -70,7 +82,7 @@ namespace AthenaEDU.Services
             // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
             var filteredCourses = await Task.Run(() =>
             {
-                return allCourses.Where(x => x.Category.Name == categoryName).ToList();
+                return allCourses.Where(x => x.Category.Name == categoryName && x.isPublished == true).ToList();
             });
 
             return filteredCourses;
@@ -83,7 +95,7 @@ namespace AthenaEDU.Services
             // Выполнение поиска асинхронно, используя Task.Run для синхронной операции
             var filteredCourses = await Task.Run(() =>
             {
-                return allCourses.Where(x => x.Category.Name == categoryName && x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                return allCourses.Where(x => x.Category.Name == categoryName && x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) && x.isPublished == true).ToList();
             });
 
             return filteredCourses;

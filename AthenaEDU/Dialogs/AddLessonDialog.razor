@@ -29,6 +29,10 @@
                         </MudStack>
                     } *@
                 </MudItem>
+                <MudItem xs="5" md="5">
+                    <MudTextField Label="Теория" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
+                </MudItem>
+
             </MudGrid>
         </DialogContent>
         <DialogActions>
@@ -44,7 +48,6 @@
     [Parameter] public Module module { get; set; }
 
     private Lesson _model;
-    private string fileName;
 
     protected async override Task OnInitializedAsync()
     {

@@ -1,8 +1,9 @@
-﻿@page "/courseRequest"
+﻿@page "/myCourses"
 
 @using System.ComponentModel.DataAnnotations;
 @inject CourseService courseService
 @inject CategoryService categoryService
+@inject UserService userService
 
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
     <MudPaper Elevation="5" Width="70%" Class="pb-10">
@@ -28,19 +29,19 @@
             @foreach (var item in Courses)
             {
                 <MudItem xs="12" md="12">
-                    <NavLink href="@($"/courseMainRequestPage/{item.Id}")">
+                    <NavLink href="@($"/editCoursePage/{item.Id}")">
                         <MudPaper Class="mr-5 ml-5" Elevation="2">
                             <MudStack Row="true">
 
-                                @* @if (item.ImageName != "" && item.ImageName != null)
+                                @if (item.ImageName != "" && item.ImageName != null)
                                 {
                                     <img style="height: 200px; width: 200px; background: rgba(128,128,128,0.06); border-radius: 15px;" class="userImg" src="imgUser/@item.ImageName" alt=" " />
                                 }
                                 @if (item.ImageName == null)
                                 {
                                     <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
-                                } *@
-                                <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                                }
+
                                 <MudStack Class="mr-2 ml-2 mt-2">
                                     <MudText Typo="Typo.h5" Style="font-weight: bold">@item.Name</MudText>
                                     <MudStack Row="true">
@@ -142,6 +143,6 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return await courseService.GetAllUnpublishedCourses();
+        return await userService.GetMyCourses(userService.CurrentUser.Id);
     }
 }

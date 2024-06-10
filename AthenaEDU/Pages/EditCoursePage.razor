@@ -1,4 +1,4 @@
-﻿@page "/createCoursePage";
+﻿@page "/editCoursePage/{courseId}";
 
 @inject CourseService courseService
 @inject ISnackbar snackBar
@@ -26,11 +26,11 @@
             </MudItem>
 
             <MudItem xs="3" md="3">
-                <MudButton OnClick="CreateCourse" Variant="Variant.Filled" Size="Size.Large" Class="ml-12" Color="Color.Primary">Создать курс</MudButton>
+                <MudButton OnClick="SaveChanges" Variant="Variant.Filled" Size="Size.Large" Class="ml-5" Color="Color.Primary">Сохранить изменения</MudButton>
             </MudItem>
 
             <MudItem xs="5" md="5">
-                    <MudTextField Label="Описание" Class="ml-10" Variant="Variant.Outlined" Lines="5" @bind-Value="_course.Description" />
+                <MudTextField Label="Описание" Class="ml-10" Variant="Variant.Outlined" Lines="5" @bind-Value="_course.Description" />
             </MudItem>
 
             <MudItem xs="4" md="4" Class="mb-15">
@@ -45,15 +45,15 @@
 
             <MudItem xs="12" md="12">
                 <MudStack AlignItems="AlignItems.End" Class="ml-10" Row="true">
-                    @if (fileName != "" && fileName != null)
+                    @* @if (fileName != "" && fileName != null)
                     {
                         <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
                     }
                     @if (fileName == null)
                     {
-                        <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
-                    }
-
+                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                    } *@
+                    <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
                     <label for="filePicker2" class="label">
                         <span class="title"><img class="imgtool" src="Image.svg" alt="img" /></span>
                         <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnSubmit" multiple></InputFile>
@@ -70,7 +70,7 @@
                                     <MudText Typo="Typo.h4">Модули</MudText>
                                 </ChildContent>
                                 <NestedList>
-                                    @foreach (var module in _modules)
+                                    @foreach (var module in _course.Modules)
                                     {
                                         <MudListItem Text="@module.Name">
                                             <NestedList>
@@ -81,7 +81,7 @@
                                                             <MudTh></MudTh>
                                                             <MudTh></MudTh>
                                                             <MudTh><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
-                                            
+
                                                         </HeaderContent>
                                                         <RowTemplate>
                                                             <MudTd DataLabel="Название урока">@context.Name</MudTd>
@@ -109,7 +109,8 @@
 
 
 @code {
-    private Course _course = new Course();
+    [Parameter] public string courseId { get; set; }
+    private Course _course;
     private bool courseCreated = false;
     private string imageData;
     private string fileName;
@@ -122,21 +123,33 @@
         "Приватный"
     };
     private string _selectedAccessibility;
-    private CourseCategory _selectedCategory;
+    private CourseCategory _selectedCategory = new CourseCategory();
     private List<RenderFragment> components = new List<RenderFragment>();
 
     protected override void OnInitialized()
     {
-        _selectedAccessibility = courseAccessibility[0];
-        FillCategories();
-
-        FileSystemService.RemoveFolder("imgUser");
-
-        if (_course.ImageName != null)
+        if (!string.IsNullOrEmpty(courseId))
         {
-            FileSystemService.DownloadToLocalByName(_course.ImageName, "imgUser");
-            fileName = FileSystemService.GetNameOfDir("imgUser");
-            StateHasChanged();
+            _course = courseService.GetCourseById(courseId);
+
+            if (_course != null)
+            {
+                _selectedAccessibility = (_course.isPrivate == true ? courseAccessibility[0] : courseAccessibility[1]);
+
+                FillCategories();
+
+                _selectedCategory = _categories[0];
+                var module = _course.Modules?.FirstOrDefault();
+
+                FileSystemService.RemoveFolder("imgCourse");
+
+                if (!string.IsNullOrEmpty(_course.ImageName))
+                {
+                    FileSystemService.DownloadToLocalByName(_course.ImageName, "imgCourse");
+                    fileName = FileSystemService.GetNameOfDir("imgCourse");
+                    StateHasChanged();
+                }
+            }
         }
     }
 
@@ -150,7 +163,7 @@
         var dialogParameters = new DialogParameters();
         dialogParameters.Add("Action", "Delete");
 
-        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall};
+        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
         var dialogResult = await DialogService.Show<ConfirmDialog>("Удаление", dialogParameters, dialogOptions).Result;
 
@@ -166,7 +179,7 @@
         var parameters = new DialogParameters<AddLessonDialog>();
         parameters.Add(x => x.course, _course);
         parameters.Add(x => x.module, module);
-        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth = true};
+        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth = true };
         var dialog = await DialogService.ShowAsync<AddLessonDialog>("Добавление урока", parameters, options);
         var res = await dialog.Result;
 
@@ -179,7 +192,7 @@
 
     private async Task OpenEditLessonDialog(Module module, Lesson lesson)
     {
-        Lesson currentLesson = new Lesson() { Name = lesson.Name, LessonFile = lesson.LessonFile};
+        Lesson currentLesson = new Lesson() { Name = lesson.Name, LessonFile = lesson.LessonFile };
         var parameters = new DialogParameters<EditLessonDialog>();
         parameters.Add("lesson", currentLesson);
         var options = new DialogOptions { CloseOnEscapeKey = true };
@@ -223,22 +236,14 @@
         }
     }
 
-    private async Task CreateCourse()
+    private async Task SaveChanges()
     {
         bool success = false;
         try
         {
-            if (courseService.GetCourseByName(_course.Name) == null && !String.IsNullOrEmpty(_course.Name) && _selectedCategory != null)
+            if (!String.IsNullOrEmpty(_course.Name) && _selectedCategory != null)
             {
-                _course.Author = userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic;
-                _course.isPrivate = isPrivate();
-                _course.Modules = _modules;
-                _course.Category = _selectedCategory;
-
-                await courseService.AddCourseAsync(_course);
-                userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name));
-                await userService.UpdateUserAsync(userService.CurrentUser);
-
+                await courseService.UpdateCourseAsync(_course);
                 success = true;
 
                 if (fileName != "")
@@ -276,7 +281,7 @@
 
     private async Task OnSubmit(InputFileChangeEventArgs e)
     {
-        String folder = "imgUser";
+        String folder = "imgCourse";
         String pathFolder = $"/wwwroot/{folder}/";
         FileSystemService.RemoveFolder(folder);
         foreach (var file in e.GetMultipleFiles(e.FileCount))
@@ -296,13 +301,13 @@
             }
         }
 
-        fileName = FileSystemService.GetNameOfDir("imgUser");
+        fileName = FileSystemService.GetNameOfDir("imgCourse");
         StateHasChanged();
     }
 
     private void ConfirmImage(String filename)
     {
-        FileSystemService.UploadImageToDb("imgUser");
+        FileSystemService.UploadImageToDb("imgCourse");
         _course.ImageName = fileName;
         courseService.UpdateCourseAsync(_course);
     }

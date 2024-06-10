@@ -15,12 +15,13 @@
         <PropertyColumn Property="x => x.Name" Title="Название" />
             <TemplateColumn>
                 <CellTemplate>
-                <MudButton Class="mud-theme-primary" >Редактировать</MudButton>
+                <MudButton Class="mud-theme-primary" OnClick="@(()=> OpenEditCategoryDialog(context.Item))">Редактировать</MudButton>
                 </CellTemplate>
             </TemplateColumn>
         <TemplateColumn>
             <CellTemplate>
-                <MudButton Class="mud-theme-primary" OnClick="@(() => DeleteCategory(context.Item.Name))">Удалить</MudButton>
+                @* <MudButton Class="mud-theme-primary" OnClick="@(() => DeleteCategory(context.Item.Name))">Удалить</MudButton> *@
+                <MudButton Class="mud-theme-primary" OnClick="@(()=> OpenConfirmationDialog(context.Item.Name))">Удалить</MudButton>
             </CellTemplate>
         </TemplateColumn>
     </Columns>
@@ -32,6 +33,37 @@
     protected override async Task OnInitializedAsync()
     {
         await GetCategories();
+    }
+
+    private async Task OpenConfirmationDialog(string name)
+    {
+        var dialogParameters = new DialogParameters();
+        dialogParameters.Add("Action", "Delete");
+
+        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialogResult = await DialogService.Show<ConfirmDialog>("Удаление", dialogParameters, dialogOptions).Result;
+
+        if (!dialogResult.Canceled)
+        {
+            await categoryService.DeleteCategoryByName(name);
+            await GetCategories();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenEditCategoryDialog(CourseCategory category)
+    {
+        var parameters = new DialogParameters<EditCategoryDialog>();
+        parameters.Add("category", category);
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.Show<EditCategoryDialog>("Редактирование урока", parameters, options).Result;
+
+        if (!dialog.Canceled)
+        {
+            GetCategories();
+            StateHasChanged();
+        }
     }
 
     private async Task GetCategories()

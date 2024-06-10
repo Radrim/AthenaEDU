@@ -8,8 +8,9 @@
                 <MudItem xs="8">
                     <MudTextField T="string" Variant="Variant.Outlined" Label="Название" @bind-Value="lesson.Name" For="@(() => lesson.Name)"></MudTextField>
                 </MudItem>
-                <MudItem xs="12">
-                    <MudText>Здесь будет файл</MudText>
+
+                <MudItem xs="5" md="5">
+                    <MudTextField Label="Теория" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
                 </MudItem>
             </MudGrid>
         </DialogContent>

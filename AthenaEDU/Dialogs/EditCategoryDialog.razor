@@ -1,0 +1,52 @@
+﻿@inject ISnackbar snackbar
+@inject CategoryService categoryService
+
+<MudForm Model="category">
+    <MudDialog>
+        <DialogContent>
+            <MudTextField T="string" Label="Название" @bind-Value="category.Name" For="@(() => category.Name)"></MudTextField>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewCategory">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public CourseCategory category { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    private async Task AddNewCategory()
+    {
+        bool success = false;
+
+        try
+        {
+            await categoryService.UpdateCategoryAsync(category);
+            success = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при изменении категории: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Изменения успешно применены!", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("Изменения не приняты!", Severity.Error);
+        }
+    }
+}

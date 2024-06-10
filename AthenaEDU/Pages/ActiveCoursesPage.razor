@@ -1,8 +1,9 @@
-﻿@page "/courseRequest"
+﻿@page "/activeCourses"
 
 @using System.ComponentModel.DataAnnotations;
 @inject CourseService courseService
 @inject CategoryService categoryService
+@inject UserService userService
 
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
     <MudPaper Elevation="5" Width="70%" Class="pb-10">
@@ -28,7 +29,7 @@
             @foreach (var item in Courses)
             {
                 <MudItem xs="12" md="12">
-                    <NavLink href="@($"/courseMainRequestPage/{item.Id}")">
+                    <NavLink href="@($"/courseMainPage/{item.Id}")">
                         <MudPaper Class="mr-5 ml-5" Elevation="2">
                             <MudStack Row="true">
 
@@ -40,7 +41,8 @@
                                 {
                                     <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
                                 } *@
-                                <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+
+                                <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
                                 <MudStack Class="mr-2 ml-2 mt-2">
                                     <MudText Typo="Typo.h5" Style="font-weight: bold">@item.Name</MudText>
                                     <MudStack Row="true">
@@ -142,6 +144,6 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return await courseService.GetAllUnpublishedCourses();
+        return await userService.GetActiveCourses(userService.CurrentUser.Id);
     }
 }
