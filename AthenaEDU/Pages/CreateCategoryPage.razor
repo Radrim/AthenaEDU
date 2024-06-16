@@ -5,30 +5,30 @@
 
 <PageTitle>Категории</PageTitle>
 
-<MudDataGrid Items="@_categories" Class="ma-15" Elevation="5" Square>
+<MudDataGrid Items="@_categories" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
     <ToolBarContent>
         <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Категории</MudText>
         <MudSpacer></MudSpacer>
-        <MudButton OnClick="@OpenAddCategoryDialog" Class="mud-theme-primary mr-10">Добавить категорию</MudButton>
+        <MudButton OnClick="@OpenAddCategoryDialog" Class="mud-theme-dark mr-10">Добавить категорию</MudButton>
     </ToolBarContent>
     <Columns>
         <PropertyColumn Property="x => x.Name" Title="Название" />
             <TemplateColumn>
                 <CellTemplate>
-                <MudButton Class="mud-theme-primary" OnClick="@(()=> OpenEditCategoryDialog(context.Item))">Редактировать</MudButton>
+                <MudButton Color="Color.Dark" Variant="Variant.Outlined" OnClick="@(()=> OpenEditCategoryDialog(context.Item))">Редактировать</MudButton>
                 </CellTemplate>
             </TemplateColumn>
         <TemplateColumn>
             <CellTemplate>
                 @* <MudButton Class="mud-theme-primary" OnClick="@(() => DeleteCategory(context.Item.Name))">Удалить</MudButton> *@
-                <MudButton Class="mud-theme-primary" OnClick="@(()=> OpenConfirmationDialog(context.Item.Name))">Удалить</MudButton>
+                <MudButton Color="Color.Dark" Variant="Variant.Outlined" OnClick="@(()=> OpenConfirmationDialog(context.Item.Name))">Удалить</MudButton>
             </CellTemplate>
         </TemplateColumn>
     </Columns>
 </MudDataGrid>
 
 @code {
-    private List<CourseCategory> _categories;
+    private List<Category> _categories;
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,7 +52,7 @@
         }
     }
 
-    private async Task OpenEditCategoryDialog(CourseCategory category)
+    private async Task OpenEditCategoryDialog(Category category)
     {
         var parameters = new DialogParameters<EditCategoryDialog>();
         parameters.Add("category", category);

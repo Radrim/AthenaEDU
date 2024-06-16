@@ -18,7 +18,7 @@
                         }
                         @if (fileName == null)
                         {
-                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                         }
 
                         <label for="filePicker2" class="label">
@@ -48,14 +48,14 @@
         </MudItem>
         <MudItem xs="2" md="2">
             <MudStack Justify="Justify.FlexStart">
-                    <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true">
-                        <MudText Color="Color.Primary" Class="fw-bold" Typo="Typo.button">Сменить пароль</MudText>
+                    <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Dark" Class="mt-4" FullWidth="true">
+                        Сменить пароль
                     </MudButton>
 
-                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
+                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
 
-                    <MudButton OnClick="@Logout" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4 fw-bold" FullWidth="true">
-                        <MudText Color="Color.Secondary" Class="fw-bold" Typo="Typo.button">Выйти</MudText>
+                    <MudButton OnClick="@Logout" Variant="Variant.Outlined" Color="Color.Dark" Class="mt-4 fw-bold" FullWidth="true">
+                        <MudText Class="fw-bold" Typo="Typo.button">Выйти</MudText>
                     </MudButton>
             </MudStack>
         </MudItem>

@@ -3,11 +3,17 @@ using MongoDB.Bson;
 
 namespace AthenaEDU.Models
 {
-    public class CourseCategory
+    public class Category
+
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; private set; }
+        public string Id { get; set; }
         public string Name { get; set; }
+        public Category() { }
+        public Category(string name) 
+        {
+            Name = name;
+        }
     }
 }

@@ -13,8 +13,8 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">AthenaEDU</MudText>
         <MudSpacer />
-        <MudButton hidden="@isAuth()" OnClick="NavigateToAuth" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3; margin-right: 1rem">Войти</MudButton>
-        <MudButton hidden="@isAuth()" OnClick="NavigateToRegistration" Variant="Variant.Filled" Color="Color.Secondary" Style="color: #7c73c3">Зарегистрироваться</MudButton>
+        <MudButton hidden="@isAuth()" OnClick="NavigateToAuth" Variant="Variant.Filled" Color="Color.Dark" Style=" margin-right: 1rem">Войти</MudButton>
+        <MudButton hidden="@isAuth()" OnClick="NavigateToRegistration" Variant="Variant.Filled" Color="Color.Dark">Зарегистрироваться</MudButton>
         <MudIconButton hidden="@(!isAuth())" OnClick="NavigateToProfile" Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Variant="@DrawerVariant.Temporary" Elevation="1" Color="Color.Primary">
@@ -36,11 +36,18 @@
         {
             Palette = new Palette
             {
-                Primary = "#7c73c3",
-                Secondary = "#fafafa",
-                Dark = "#bbb1ff",
-                AppbarBackground = "#7c73c3",
-                Info = "#7c73c3"
+
+                Primary = "#355c7d",
+                Secondary = "#fff",
+                Dark = "#c76376",
+                AppbarBackground = "#355c7d",
+                Info = "#355c7d",
+
+                // Primary = "#7c73c3",
+                // Secondary = "#fafafa",
+                // Dark = "#bbb1ff",
+                // AppbarBackground = "#7c73c3",
+                // Info = "#7c73c3"
 
                 // Primary = "#2a8687",
                 // Secondary = "#fafafa",

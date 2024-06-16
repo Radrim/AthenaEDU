@@ -16,11 +16,11 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    private CourseCategory _model;
+    private Category _model;
 
     protected async override Task OnInitializedAsync()
     {
-        _model = new CourseCategory();
+        _model = new Category();
         await base.OnInitializedAsync();
     }
 

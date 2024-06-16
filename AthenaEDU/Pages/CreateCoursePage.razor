@@ -26,7 +26,7 @@
             </MudItem>
 
             <MudItem xs="3" md="3">
-                <MudButton OnClick="CreateCourse" Variant="Variant.Filled" Size="Size.Large" Class="ml-12" Color="Color.Primary">Создать курс</MudButton>
+                <MudButton OnClick="CreateCourse" Variant="Variant.Filled" Size="Size.Large" Class="ml-12" Color="Color.Dark">Создать курс</MudButton>
             </MudItem>
 
             <MudItem xs="5" md="5">
@@ -34,9 +34,9 @@
             </MudItem>
 
             <MudItem xs="4" md="4" Class="mb-15">
-                <MudSelect @bind-Value="_selectedCategory" T="CourseCategory" Label="Категория" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
+                <MudSelect @bind-Value="_selectedCategory" T="Category" Label="Категория" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.BottomRight"
                            Variant="Variant.Filled" AdornmentColor="Color.Primary" Class="mud-theme-secondary">
-                    @foreach (CourseCategory item in _categories)
+                    @foreach (Category item in _categories)
                     {
                         <MudSelectItem Value="@item">@item.Name</MudSelectItem>
                     }
@@ -51,7 +51,7 @@
                     }
                     @if (fileName == null)
                     {
-                        <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                     }
 
                     <label for="filePicker2" class="label">
@@ -80,13 +80,13 @@
                                                             <MudTh>Название урока</MudTh>
                                                             <MudTh></MudTh>
                                                             <MudTh></MudTh>
-                                                            <MudTh><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
+                                                            <MudTh><MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
                                             
                                                         </HeaderContent>
                                                         <RowTemplate>
                                                             <MudTd DataLabel="Название урока">@context.Name</MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenEditLessonDialog(module, context))">Редактировать</MudButton></MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="@(() => OpenEditLessonDialog(module, context))">Редактировать</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
                                                         </RowTemplate>
                                                     </MudTable>
                                                 </MudListItem>
@@ -99,7 +99,7 @@
                     </MudItem>
 
                     <MudItem xs="2" md="2" Class="ma-5">
-                        <MudButton Variant="Variant.Filled" OnClick="@OpenAddModuleDialog" Color="Color.Primary">Добавить модуль</MudButton>
+                        <MudButton Variant="Variant.Filled" OnClick="@OpenAddModuleDialog" Color="Color.Dark">Добавить модуль</MudButton>
                     </MudItem>
                 </MudGrid>
             </MudItem>
@@ -114,7 +114,7 @@
     private string imageData;
     private string fileName;
 
-    private List<CourseCategory> _categories = new List<CourseCategory>();
+    private List<Category> _categories = new List<Category>();
     private List<Module> _modules = new List<Module>();
     private List<string> courseAccessibility = new List<string>()
     {
@@ -122,7 +122,7 @@
         "Приватный"
     };
     private string _selectedAccessibility;
-    private CourseCategory _selectedCategory;
+    private Category _selectedCategory;
     private List<RenderFragment> components = new List<RenderFragment>();
 
     protected override void OnInitialized()
@@ -179,7 +179,7 @@
 
     private async Task OpenEditLessonDialog(Module module, Lesson lesson)
     {
-        Lesson currentLesson = new Lesson() { Name = lesson.Name, LessonFile = lesson.LessonFile};
+        Lesson currentLesson = new Lesson() { Name = lesson.Name, LessonDocument = lesson.LessonDocument};
         var parameters = new DialogParameters<EditLessonDialog>();
         parameters.Add("lesson", currentLesson);
         var options = new DialogOptions { CloseOnEscapeKey = true };
@@ -236,7 +236,7 @@
                 _course.Category = _selectedCategory;
 
                 await courseService.AddCourseAsync(_course);
-                userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name));
+                //userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name));
                 await userService.UpdateUserAsync(userService.CurrentUser);
 
                 success = true;

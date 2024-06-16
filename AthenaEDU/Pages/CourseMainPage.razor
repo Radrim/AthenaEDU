@@ -10,8 +10,15 @@
 
 <MudGrid Justify="Justify.Center" Style="height: 85vh; width: 100vw;" Class="mt-10">
     <MudPaper Elevation="10" Style="width: 80%">
-        <MudGrid Justify="Justify.FlexStart" Class="mt-5">
-            <MudItem xs="3" md="3">
+        <MudGrid Justify="Justify.FlexStart" >
+            <MudItem xs="12" md="12">
+                <MudTabs Elevation="4" Rounded="true" MinimumTabWidth="400px" Centered="true" Color="@Color.Primary">
+                    <MudTabPanel Text="О курсе" />
+                    <MudTabPanel Text="Учебные материалы" />
+                    <MudTabPanel Disabled Text="Участники" />
+                </MudTabs>
+            </MudItem>
+            <MudItem xs="3" md="3" Class="mt-10">
                 <MudStack Class="ml-10" Row="true">
                     @* @if (_course.ImageName != "" && _course.ImageName != null)
                     {
@@ -22,17 +29,20 @@
                         
                     } *@
 
-                    <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
+                    <MudImage Src="@_course.ImageName" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
                 </MudStack>
             </MudItem>
 
-            <MudItem xs="4" md="4">
+            <MudItem xs="4" md="4" Class="mt-10">
                 <MudStack Spacing="4">
                     <MudField Label="Название" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Name</MudField>
                     <MudField Label="Автор" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Author</MudField>
                     <MudField Label="Категория" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Category.Name</MudField>
-                    <MudField Label="Описание" Variant="Variant.Outlined" Adornment="Adornment.Start">@_course.Description</MudField>
                 </MudStack>
+            </MudItem>
+
+            <MudItem xs="7" md="7" Class="ml-10 mt-5">
+                <MudField Label="Описание" Variant="Variant.Outlined" Adornment="Adornment.Start">@_course.Description</MudField>
             </MudItem>
 
             @if (userService.CurrentUser != null && activeCourses != null)
@@ -53,7 +63,7 @@
                 }
             }
 
-            <MudItem xs="12" md="12">
+            @* <MudItem xs="12" md="12">
                 <MudGrid Style="display: flex; justify-content: space-between;">
                     <MudItem xs="9" md="9" Class="ma-2 ml-5">
                         <MudList Clickable="true" Color="Color.Secondary">
@@ -87,7 +97,7 @@
                         </MudList>
                     </MudItem>
                 </MudGrid>
-            </MudItem>
+            </MudItem> *@
         </MudGrid>
     </MudPaper>
 </MudGrid>
@@ -116,15 +126,6 @@
 
     private void IsActive()
     {
-        if (userService.CurrentUser.ActiveCourses.Contains(_course))
-        {
-            isActive = true;
-        }
-
-        else
-        {
-            isActive = false;
-        }
     }
 
     protected override void OnInitialized()
@@ -135,7 +136,6 @@
 
     private async Task JoinToCourse()
     {
-        userService.CurrentUser.ActiveCourses.Add(_course);
         await userService.UpdateUserAsync(userService.CurrentUser);
         snackbar.Add("Вы успешно вступили в курс!", Severity.Success);
         navigationManager.NavigateTo("/myCoursePage", forceLoad: true);
@@ -143,7 +143,6 @@
 
     private async Task ExitFromCourse()
     {
-        userService.CurrentUser.ActiveCourses.Remove(_course);
         await userService.UpdateUserAsync(userService.CurrentUser);
         snackbar.Add("Вы успешно покинули курс!", Severity.Success);
     }

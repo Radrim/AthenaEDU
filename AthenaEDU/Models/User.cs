@@ -15,9 +15,9 @@ namespace AthenaEDU.Models
         public string Password { get; set; }
         public string ImageName { get; set; }
         public string Role { get; set; } = "User";
-        public List<Course> ActiveCourses { get; set; } = new List<Course>();
-        public List<Course> MyCourses { get; set; } = new List<Course>();
-
+        public List<string> ActiveCourses { get; set; } = new List<string>();
+        public List<string> MyCourses { get; set; } = new List<string>();
+        public List<string> PassedTests { get; set; } = new List<string>();
         public User() { }
 
         public User(string name, string surname, string patronymic, string email, string password) 

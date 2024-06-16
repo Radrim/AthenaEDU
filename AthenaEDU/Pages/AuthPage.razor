@@ -4,21 +4,36 @@
 @inject UserService userService
 @inject ISnackbar snackbar
 
+<PageTitle>Авторизация</PageTitle>
+
 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
-    <MudGrid Justify="Justify.Center" Style="align-items: center; height: 90vh; width: 100vw;">
+    <MudGrid Justify="Justify.Center" 
+            Style="align-items: center; height: 90vh; width: 100vw;">
         <MudItem xs="12" sm="4">
             <MudCard Elevation="5" Style="padding: 2rem">
                 <MudCardContent>
-                    <MudText Typo="Typo.h5" Style="margin-bottom: 3rem; font-weight: bold;" Color="Color.Primary" Align="Align.Center">АВТОРИЗАЦИЯ</MudText>
-                    <MudTextField T="string" Label="Email" Class="mt-3"
-                    @bind-Value="model.Email" For="@(() => model.Email)" UserAttributes="@(new Dictionary<string, object>() { { "autocomplete", "email" } })" />
+                    <MudText Typo="Typo.h5" 
+                            Style="margin-bottom: 3rem; font-weight: bold;" 
+                            Color="Color.Primary" 
+                            Align="Align.Center">АВТОРИЗАЦИЯ</MudText>
+                    <MudTextField T="string" 
+                                Label="Email" 
+                                Class="mt-3"
+                                @bind-Value="model.Email" For="@(() => model.Email)" 
+                                UserAttributes="@(new Dictionary<string, object>() { { "autocomplete", "email" } })" />
 
-                    <MudTextField T="string" Label="Пароль" Class="mt-3"
-                    @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                    <MudTextField T="string" 
+                                Label="Пароль" 
+                                Class="mt-3"
+                                @bind-Value="model.Password" For="@(() => model.Password)" 
+                                InputType="InputType.Password" />
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Class="ml-auto mr-5 mt-5" Color="Color.Primary">Войти</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" 
+                            Variant="Variant.Filled" 
+                            Class="ml-auto mr-5 mt-5" 
+                            Color="Color.Dark">Войти</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
