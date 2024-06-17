@@ -77,6 +77,7 @@
         if (_currentUser.ImageName != null)
         {
             TakeImageFromDB();
+            StateHasChanged(); ////
         }
     }
 
@@ -117,16 +118,10 @@
         ////
         _currentUser.ImageName = imgFile.Name;
         imageContent = buffers;
-        
-        // Обновляем imageName для отображения изображения
         // var imageType = imgFile.ContentType; // Получаем тип изображения
         imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
-        // imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
-        
-        // Сохраняем изображение в базе данных
-        // await fileSystemService.UploadFileToDbAsync(imgFile.Name, imageContent);
-        
         StateHasChanged();
+        ////
     }
     
     ////
@@ -136,7 +131,8 @@
         imageName = $"data:image;base64,{Convert.ToBase64String(fileContent)}";
         StateHasChanged();
     }
-
+    ////
+    
     private void ConfirmImage()
     {
         fileSystemService.UploadFileToDbAsync(imageName, imageContent);

@@ -5,6 +5,7 @@
 @inject IDialogService DialogService
 @inject UserService userService
 @inject CategoryService categoryService
+@inject FileSystemService fileSystemService
 
 <PageTitle>Создание курса</PageTitle>
 
@@ -45,11 +46,11 @@
 
             <MudItem xs="12" md="12">
                 <MudStack AlignItems="AlignItems.End" Class="ml-10" Row="true">
-                    @if (fileName != "" && fileName != null)
+                    @if (imageCourseName != "" && imageCourseName != null)
                     {
-                        <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
+                        <MudImage Src="@imageCourseName" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                     }
-                    @if (fileName == null)
+                    @if (imageCourseName == null)
                     {
                         <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                     }
@@ -112,7 +113,9 @@
     private Course _course = new Course();
     private bool courseCreated = false;
     private string imageData;
-    private string fileName;
+    private string imageCourseName;
+    private byte[] imageCourseContent;
+    
 
     private List<Category> _categories = new List<Category>();
     private List<Module> _modules = new List<Module>();
@@ -124,6 +127,13 @@
     private string _selectedAccessibility;
     private Category _selectedCategory;
     private List<RenderFragment> components = new List<RenderFragment>();
+    
+    private async Task TakeImageFromDB()
+    {
+        var fileContent = await fileSystemService.GetFileByName(_course.ImageName);
+        imageCourseName = $"data:image;base64,{Convert.ToBase64String(fileContent)}";
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
@@ -134,8 +144,7 @@
 
         if (_course.ImageName != null)
         {
-            FileSystemService.DownloadToLocalByName(_course.ImageName, "imgUser");
-            fileName = FileSystemService.GetNameOfDir("imgUser");
+            TakeImageFromDB();
             StateHasChanged();
         }
     }
@@ -241,9 +250,9 @@
 
                 success = true;
 
-                if (fileName != "")
+                if (imageCourseName != "")
                 {
-                    ConfirmImage(fileName);
+                    ConfirmImage();
                 }
             }
         }
@@ -276,34 +285,23 @@
 
     private async Task OnSubmit(InputFileChangeEventArgs e)
     {
-        String folder = "imgUser";
-        String pathFolder = $"/wwwroot/{folder}/";
-        FileSystemService.RemoveFolder(folder);
-        foreach (var file in e.GetMultipleFiles(e.FileCount))
-        {
-            try
-            {
-                Stream stream = file.OpenReadStream();
-                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
-                FileStream fs = File.Create(path);
-                await stream.CopyToAsync(fs);
-                stream.Close();
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-
-        fileName = FileSystemService.GetNameOfDir("imgUser");
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        
+        ////
+        _course.ImageName = imgFile.Name;
+        imageCourseContent = buffers;
+        // var imageType = imgFile.ContentType; // Получаем тип изображения
+        imageCourseName = $"data:image;base64,{Convert.ToBase64String(imageCourseContent)}";
         StateHasChanged();
+        ////
     }
 
-    private void ConfirmImage(String filename)
+    private void ConfirmImage()
     {
-        FileSystemService.UploadImageToDb("imgUser");
-        _course.ImageName = fileName;
+        fileSystemService.UploadFileToDbAsync(imageCourseName, imageCourseContent);
+        _course.ImageName = imageCourseName;
         courseService.UpdateCourseAsync(_course);
     }
 }
