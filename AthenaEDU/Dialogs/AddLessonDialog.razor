@@ -1,5 +1,7 @@
 ﻿@inject ISnackbar snackbar
 @inject CourseService courseService
+@inject FileSystemService fileSystemService;
+@inject IJSRuntime jsRuntime;
 
 <MudForm Model="_model">
     <MudDialog>
@@ -28,10 +30,15 @@
                             <MudText>@fileName</MudText>
                         </MudStack>
                     } *@
+
+                    <InputFile OnChange="FileUpload"></InputFile>
+
                 </MudItem>
                 <MudItem xs="5" md="5">
-                    <MudTextField Label="Теория" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
+                    <MudTextField Label="Теория" @bind-Text="fileName" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
                 </MudItem>
+
+                <MudButton OnClick="DownloadFile">Скачать это сраный файл</MudButton>
 
             </MudGrid>
         </DialogContent>
@@ -48,6 +55,9 @@
     [Parameter] public Module module { get; set; }
 
     private Lesson _model;
+
+    private string fileName;
+    private byte[] fileBytes;
 
     protected async override Task OnInitializedAsync()
     {
@@ -81,4 +91,28 @@
             snackbar.Add("При создании урока произошла ошибка!", Severity.Error);
         }
     }
-  }
+
+    private async Task FileUpload(InputFileChangeEventArgs e)
+    {
+        long maxSize = 1024 * 1024 * 5;
+        var file = e.File;
+        if (file != null)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream(maxSize).CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+                // Теперь fileBytes содержит содержимое файла в виде массива байтов
+                // Вы можете использовать fileBytes по вашему усмотрению
+                fileName = file.Name;
+            }
+        }
+
+        await fileSystemService.UploadFileToDbAsync(fileName, fileBytes);
+    }
+
+    private async Task DownloadFile()
+    {
+        await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileBytes);
+    }
+}

@@ -7,10 +7,12 @@ namespace AthenaEDU.Services
     {
         public IMongoDatabase database;
         string _defaultConnectionString = "mongodb://localhost";
+        public IGridFSBucket gridFS;
         public MongoDBConnection()
         {
             var client = new MongoClient(_defaultConnectionString);
             database = client.GetDatabase("AthenaEDU_DB");
+            gridFS = new GridFSBucket(database);
         }
     }
 }

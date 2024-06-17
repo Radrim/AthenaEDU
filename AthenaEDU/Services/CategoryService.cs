@@ -7,6 +7,7 @@ namespace AthenaEDU.Services
     public class CategoryService
     {
         private IMongoCollection<Category> _categories;
+        
 
         public CategoryService(MongoDBConnection connection)
         {

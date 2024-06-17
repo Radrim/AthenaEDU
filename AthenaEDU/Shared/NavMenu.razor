@@ -2,6 +2,7 @@
 
 <MudNavMenu Color="Color.Secondary" Style="font-size: 20px; margin-top: 1rem;">
     <MudNavLink Href="/" Match="NavLinkMatch.All">Главная</MudNavLink>
+    <MudNavLink Href="/testPage" Match="NavLinkMatch.Prefix">Тест</MudNavLink>
     @if (userService.CurrentUser != null && userService.CurrentUser.Role == "User")
     {
         <MudNavGroup Title="Курсы">

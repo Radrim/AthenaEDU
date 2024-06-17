@@ -1,4 +1,5 @@
-﻿@inject ISnackbar snackbar
+﻿@using MongoDB.Bson
+@inject ISnackbar snackbar
 @inject CourseService courseService
 
 <MudForm Model="_module">
@@ -36,6 +37,7 @@
             if (!String.IsNullOrEmpty(_module.Name))
             {
                 success = true;
+                _module.Id = ObjectId.GenerateNewId().ToString();
                 CloseBySave();
             }
         }
