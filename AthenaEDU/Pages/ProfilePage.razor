@@ -4,6 +4,7 @@
 @inject ISnackbar snackbar
 @inject IDialogService DialogService
 @inject NavigationManager navigationManager
+@inject FileSystemService fileSystemService
 
 <EditForm Model="@_currentUser" OnValidSubmit="SaveChanges">
     <DataAnnotationsValidator />
@@ -12,13 +13,13 @@
             <MudGrid Justify="Justify.Center" Style="align-items: center;">
                 <MudItem xs="6" md="6">
                     <MudStack>
-                        @if (fileName != "" && fileName != null)
+                        @if (imageName != "" && imageName != null)
                         {
-                            <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
+                            <MudImage Src="@imageName" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                         }
-                        @if (fileName == null)
+                        @if (imageName == null)
                         {
-                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
+                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
                         }
 
                         <label for="filePicker2" class="label">
@@ -64,7 +65,8 @@
 
 @code {
     private User _currentUser = new User();
-    private string fileName;
+    private string imageName;
+    private byte[] imageContent;
 
     protected override void OnInitialized()
     {
@@ -74,9 +76,7 @@
 
         if (_currentUser.ImageName != null)
         {
-            FileSystemService.DownloadToLocalByName(_currentUser.ImageName, "imgUser");
-            fileName = FileSystemService.GetNameOfDir("imgUser");
-            StateHasChanged();
+            TakeImageFromDB();
         }
     }
 
@@ -88,9 +88,9 @@
             await userService.UpdateUserAsync(_currentUser);
             success = true;
 
-            if (fileName != "")
+            if (imageName != "")
             {
-                ConfirmImage(fileName);
+                ConfirmImage();
             }
         }
         catch (Exception ex)
@@ -110,34 +110,37 @@
 
     private async Task OnSubmit(InputFileChangeEventArgs e)
     {
-        String folder = "imgUser";
-        String pathFolder = $"/wwwroot/{folder}/";
-        FileSystemService.RemoveFolder(folder);
-        foreach (var file in e.GetMultipleFiles(e.FileCount))
-        {
-            try
-            {
-                Stream stream = file.OpenReadStream();
-                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
-                FileStream fs = File.Create(path);
-                await stream.CopyToAsync(fs);
-                stream.Close();
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-
-        fileName = FileSystemService.GetNameOfDir("imgUser");
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        
+        ////
+        _currentUser.ImageName = imgFile.Name;
+        imageContent = buffers;
+        
+        // Обновляем imageName для отображения изображения
+        // var imageType = imgFile.ContentType; // Получаем тип изображения
+        imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
+        // imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
+        
+        // Сохраняем изображение в базе данных
+        // await fileSystemService.UploadFileToDbAsync(imgFile.Name, imageContent);
+        
+        StateHasChanged();
+    }
+    
+    ////
+    private async Task TakeImageFromDB()
+    {
+        var fileContent = await fileSystemService.GetFileByName(_currentUser.ImageName);
+        imageName = $"data:image;base64,{Convert.ToBase64String(fileContent)}";
         StateHasChanged();
     }
 
-    private void ConfirmImage(String filename)
+    private void ConfirmImage()
     {
-        FileSystemService.UploadImageToDb("imgUser");
-        _currentUser.ImageName = fileName;
+        fileSystemService.UploadFileToDbAsync(imageName, imageContent);
+        _currentUser.ImageName = imageName;
         userService.UpdateUserAsync(_currentUser);
     }
 
