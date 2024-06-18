@@ -60,7 +60,7 @@ namespace AthenaEDU.Services
 
         public async Task<List<Course>> GetAllUnpublishedCourses()
         {
-            var filter = Builders<Course>.Filter.Eq(c => c.isPublished, false);
+            var filter = Builders<Course>.Filter.Eq(c => c.isPublished, null);
             return await _courses.Find(filter).ToListAsync();
         }
 

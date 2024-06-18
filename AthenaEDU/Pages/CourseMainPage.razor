@@ -53,12 +53,15 @@
                                 </MudStack>
                             </MudItem>
 
-                            <MudItem xs="4" md="4" Class="mt-5 ml-16">
-                                <MudStack>
+                            @if (userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)
+                            {
+                                <MudItem xs="4" md="4" Class="mt-5 ml-16">
+                                    <MudStack>
                                     <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Dark">Вступить</MudButton>
                                     <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Info">Покинуть</MudButton>
                                 </MudStack>
                             </MudItem>
+                            }
 
                             <MudItem xs="7" md="7" Class="ml-10 mt-5">
                                 <MudField Label="Описание" Variant="Variant.Outlined" Lines="5">@_course.Description</MudField>
@@ -127,31 +130,6 @@
                     </MudTabPanel>
 
                     <MudTabPanel Text="Участники">
-                        @*  <MudGrid Class="mt-1 mb-1">
-                        <MudItem xs="3" md="3">
-                        <MudText Class="ml-4" Typo="Typo.h6">@lesson.Name</MudText>
-                        </MudItem>
-                        <MudItem xs="8" md="8">
-                        <MudStack AlignItems="AlignItems.Start">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                        @if (lesson.LessonDocument != null)
-                        {
-                        <MudText Typo="Typo.body1"><b>Лекция: </b></MudText>
-                        <MudText Typo="Typo.subtitle1"> @lesson.LessonDocument.FileName</MudText>
-                        <MudButton OnClick="@(async () =>
-                        await DownloadFile(lesson.LessonDocument.FileName, lesson.LessonDocument.FileContent))"
-                        Color="Color.Dark"
-                        Variant="Variant.Filled"
-                        Size="Size.Small">Скачать файл</MudButton>
-                        }
-                        </MudStack>
-                        @if (lesson.LessonTest == null)
-                        {
-                        <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Large">Пройти тест</MudButton>
-                        }
-                        </MudStack>
-                        </MudItem>
-                        </MudGrid> *@
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>

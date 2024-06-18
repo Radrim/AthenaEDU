@@ -153,7 +153,14 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return await courseService.GetUserCourses(userService.CurrentUser.MyCourses);
+        if (userService.CurrentUser.MyCourses != null)
+        {
+            return await courseService.GetUserCourses(userService.CurrentUser.ActiveCourses);
+        }
+        else
+        {
+            return new List<Course>();
+        }
     }
 
     private string TakeImage(string imageName)

@@ -33,8 +33,8 @@
             @foreach (var item in Courses)
             {
                 <MudItem xs="12" md="12">
-                    <NavLink href="@($"/courseMainPage/{item.Id}")">
-                        <MudPaper Class="mr-5 ml-5" Elevation="5">
+                    <MudPaper Class="mr-5 ml-5" Elevation="5" Style="display:flex; flex-direction: row; justify-content: space-between">
+                        <NavLink href="@($"/courseMainPage/{item.Id}")" style="display:flex; flex: 1;">
                             <MudStack Row="true">
                                 @if (!String.IsNullOrEmpty(item.ImageName))
                                 {
@@ -52,28 +52,25 @@
                                               ObjectFit="ObjectFit.Cover"
                                               Class="rounded-lg"></MudImage>
                                 }
-                                <MudGrid>
-                                    <MudItem xs="8" md="8">
-                                        <MudStack Class="mr-2 ml-2 mt-2">
-                                            <MudText Typo="Typo.h4" Style="font-weight: bold">@item.Name</MudText>
-                                            <MudStack Row="true" Spacing="5">
-                                                <MudText Typo="Typo.body2"><b>Автор:</b> @item.Author</MudText>
-                                                <MudText Typo="Typo.body2"><b>Категория:</b> @item.Category.Name</MudText>
-                                        
-                                            </MudStack>
-                                            <MudText Typo="Typo.body1">@item.Description</MudText>
-                                        </MudStack>
-                                    </MudItem>
-                                    <MudItem xs="4" md="4">
-                                        <MudStack Row="true" Justify="Justify.Center" Style="height: 100%" AlignItems="AlignItems.Center">
-                                                        <MudButton Variant="Variant.Outlined" Color="Color.Dark">Принять</MudButton>
-                                                        <MudButton Variant="Variant.Outlined" Color="Color.Dark">Отклонить</MudButton>
-                                        </MudStack>
-                                    </MudItem>
-                                </MudGrid>
+                                <MudStack Class="mr-2 ml-2 mt-2">
+                                    <MudText Typo="Typo.h4" Style="font-weight: bold">@item.Name</MudText>
+                                    <MudStack Row="true" Spacing="5">
+                                        <MudText Typo="Typo.body2"><b>Автор:</b> @item.Author</MudText>
+                                        <MudText Typo="Typo.body2"><b>Категория:</b> @item.Category.Name</MudText>
+
+                                    </MudStack>
+                                    <MudText Typo="Typo.body1">@item.Description</MudText>
+                                </MudStack>
                             </MudStack>
-                        </MudPaper>
-                    </NavLink>
+                        </NavLink>
+                        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Class="mr-15">
+                            <MudStack Row="true" Justify="Justify.Center" Style="height: 100%" AlignItems="AlignItems.Center">
+                                <MudButton Variant="Variant.Outlined" OnClick="@(async () => await AcceptRequest(item))" Color="Color.Dark">Принять</MudButton>
+                                <MudButton Variant="Variant.Outlined" OnClick="@(async () => await RejectRequest(item))" Color="Color.Dark">Отклонить</MudButton>
+                            </MudStack>
+                        </MudStack>
+
+                    </MudPaper>
                 </MudItem>
             }
         </MudGrid>
@@ -172,5 +169,19 @@
         var imageContent = fileSystemService.GetFileByName(imageName);
 
         return $"data:image;base64,{Convert.ToBase64String(imageContent)}";
+    }
+
+    private async Task AcceptRequest(Course course)
+    {
+        course.isPublished = true;
+        await courseService.UpdateCourseAsync(course);
+        Courses = await FillCourses();
+    }
+
+    private async Task RejectRequest(Course course)
+    {
+        course.isPublished = false;
+        await courseService.UpdateCourseAsync(course);
+        Courses = await FillCourses();
     }
 }
