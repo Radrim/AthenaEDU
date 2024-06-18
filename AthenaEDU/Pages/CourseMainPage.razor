@@ -1,149 +1,199 @@
-﻿@page "/courseMainPage/{courseId}"
-@using MongoDB.Bson
+﻿@page "/courseMainPage/{courseId}";
 
 @inject CourseService courseService
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
 @inject UserService userService
-@inject ISnackbar snackbar
+@inject CategoryService categoryService
+@inject FileSystemService fileSystemService
 @inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
 
 <PageTitle>@_course.Name</PageTitle>
 
 <MudGrid Justify="Justify.Center" Style="height: 85vh; width: 100vw;" Class="mt-10">
     <MudPaper Elevation="10" Style="width: 80%">
-        <MudGrid Justify="Justify.FlexStart" >
+        <MudGrid Justify="Justify.FlexStart">
             <MudItem xs="12" md="12">
                 <MudTabs Elevation="4" Rounded="true" MinimumTabWidth="400px" Centered="true" Color="@Color.Primary">
-                    <MudTabPanel Text="О курсе" />
-                    <MudTabPanel Text="Учебные материалы" />
-                    <MudTabPanel Disabled Text="Участники" />
+                    <MudTabPanel Text="О курсе">
+                        <MudGrid Justify="Justify.FlexStart">
+                            <MudItem xs="4" md="4" Class="mt-10">
+                                <MudStack Class="ml-10" Row="true">
+                                    <MudStack AlignItems="AlignItems.End" Row="true">
+
+                                        @if (!String.IsNullOrEmpty(_course.ImageName))
+                                        {
+                                            <MudImage Src="@(TakeImage(_course.ImageName))"
+                                                      Width="250"
+                                                      Height="250"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      Elevation="5"
+                                                      Class="rounded-lg"></MudImage>
+                                        }
+                                        else
+                                        {
+                                            <MudImage Src="images/defaultCourseImage.jpg"
+                                                      Width="250"
+                                                      Height="250"
+                                                      ObjectFit="ObjectFit.Cover"
+                                                      Elevation="5"
+                                                      Class="rounded-lg"></MudImage>
+                                        }
+
+                                    </MudStack>
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="3" md="3" Class="mt-10">
+                                <MudStack Spacing="4">
+                                    <MudField Variant="Variant.Outlined" Label="Название курса">@_course.Name</MudField>
+                                    <MudField Label="Автор" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Author</MudField>
+                                    <MudField Label="Категория">@_course.Category.Name</MudField>
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="4" md="4" Class="mt-5 ml-16">
+                                <MudStack>
+                                    <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Dark">Вступить</MudButton>
+                                    <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Info">Покинуть</MudButton>
+                                </MudStack>
+                            </MudItem>
+
+                            <MudItem xs="7" md="7" Class="ml-10 mt-5">
+                                <MudField Label="Описание" Variant="Variant.Outlined" Lines="5">@_course.Description</MudField>
+                            </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Учебные материалы">
+                        <MudGrid Justify="Justify.FlexStart">
+                            <MudItem xs="12" md="12">
+                                <MudGrid>
+                                    <MudItem xs="9" md="9" Class="ma-2 ml-5">
+                                        <MudList Clickable="true" Color="Color.Secondary">
+                                            <MudListItem Text="Модули" InitiallyExpanded="true">
+                                                <ChildContent>
+                                                    <MudText Typo="Typo.h3">Модули</MudText>
+                                                </ChildContent>
+                                                <NestedList>
+                                                    @foreach (var module in _course.Modules)
+                                                    {
+                                                        <MudListItem>
+                                                            <ChildContent>
+                                                                <MudText Typo="Typo.h5">@module.Name</MudText>
+                                                            </ChildContent>
+                                                            <NestedList>
+                                                                @foreach (var lesson in module.Lessons)
+                                                                {
+                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true">
+                                                                        <ChildContent>
+                                                                            <MudStack Class="ml-4 mr-5" Row="true" Justify="Justify.SpaceBetween">
+                                                                                <MudText Typo="Typo.h6">@lesson.Name</MudText>
+
+                                                                                <MudStack AlignItems="AlignItems.Start" Class="mt-3">
+                                                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                                                                        @if (lesson.LessonDocument != null)
+                                                                                        {
+                                                                                            <MudText Typo="Typo.body1"><b>Лекция: </b></MudText>
+                                                                                            <MudText Typo="Typo.subtitle1"> @lesson.LessonDocument.FileName</MudText>
+                                                                                            <MudButton OnClick="@(async () =>
+                                                                                                    await DownloadFile(lesson.LessonDocument.FileName, lesson.LessonDocument.FileContent))"
+                                                                                                       Color="Color.Dark"
+                                                                                                       Variant="Variant.Filled"
+                                                                                                       Size="Size.Small">Скачать файл</MudButton>
+                                                                                        }
+                                                                                    </MudStack>
+
+                                                                                    @if (lesson.LessonTest == null)
+                                                                                    {
+                                                                                        <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Large">Пройти тест</MudButton>
+                                                                                    }
+                                                                                </MudStack>
+                                                                            </MudStack>
+                                                                        </ChildContent>
+                                                                    </MudListItem>
+                                                                }
+                                                            </NestedList>
+                                                        </MudListItem>
+                                                    }
+                                                </NestedList>
+                                            </MudListItem>
+                                        </MudList>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Участники">
+                        @*  <MudGrid Class="mt-1 mb-1">
+                        <MudItem xs="3" md="3">
+                        <MudText Class="ml-4" Typo="Typo.h6">@lesson.Name</MudText>
+                        </MudItem>
+                        <MudItem xs="8" md="8">
+                        <MudStack AlignItems="AlignItems.Start">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                        @if (lesson.LessonDocument != null)
+                        {
+                        <MudText Typo="Typo.body1"><b>Лекция: </b></MudText>
+                        <MudText Typo="Typo.subtitle1"> @lesson.LessonDocument.FileName</MudText>
+                        <MudButton OnClick="@(async () =>
+                        await DownloadFile(lesson.LessonDocument.FileName, lesson.LessonDocument.FileContent))"
+                        Color="Color.Dark"
+                        Variant="Variant.Filled"
+                        Size="Size.Small">Скачать файл</MudButton>
+                        }
+                        </MudStack>
+                        @if (lesson.LessonTest == null)
+                        {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Large">Пройти тест</MudButton>
+                        }
+                        </MudStack>
+                        </MudItem>
+                        </MudGrid> *@
+                    </MudTabPanel>
                 </MudTabs>
             </MudItem>
-            <MudItem xs="3" md="3" Class="mt-10">
-                <MudStack Class="ml-10" Row="true">
-                    @* @if (_course.ImageName != "" && _course.ImageName != null)
-                    {
-                        <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@_course.ImageName" alt=" " />
-                    }
-                    @if (_course.ImageName == null)
-                    {
-                        
-                    } *@
-
-                    <MudImage Src="@_course.ImageName" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="25" Class="rounded-lg" />
-                </MudStack>
-            </MudItem>
-
-            <MudItem xs="4" md="4" Class="mt-10">
-                <MudStack Spacing="4">
-                    <MudField Label="Название" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Name</MudField>
-                    <MudField Label="Автор" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Author</MudField>
-                    <MudField Label="Категория" Variant="Variant.Text" Adornment="Adornment.Start">@_course.Category.Name</MudField>
-                </MudStack>
-            </MudItem>
-
-            <MudItem xs="7" md="7" Class="ml-10 mt-5">
-                <MudField Label="Описание" Variant="Variant.Outlined" Adornment="Adornment.Start">@_course.Description</MudField>
-            </MudItem>
-
-            @if (userService.CurrentUser != null && activeCourses != null)
-            {
-                @if (userService.CurrentUser.Role == "User")
-                {
-                        <MudItem xs="3" md="3">
-                            <MudButton Variant="Variant.Outlined"
-                                       OnClick="@(() => isActive ? JoinToCourse() : ExitFromCourse())"
-                                       Color="Color.Primary"
-                                       Class="mt-4 ml-10"
-                                       FullWidth="true">
-                                <MudText Color="Color.Primary" Typo="Typo.button">
-                                    @(isActive ? "Поcтупить на курс" : "Покинуть")
-                                </MudText>
-                            </MudButton>
-                        </MudItem>
-                }
-            }
-
-            @* <MudItem xs="12" md="12">
-                <MudGrid Style="display: flex; justify-content: space-between;">
-                    <MudItem xs="9" md="9" Class="ma-2 ml-5">
-                        <MudList Clickable="true" Color="Color.Secondary">
-                            <MudListItem Text="Модули" InitiallyExpanded="true">
-                                <ChildContent>
-                                    <MudText Typo="Typo.h4">Модули</MudText>
-                                </ChildContent>
-                                <NestedList>
-                                    @foreach (var module in _course.Modules)
-                                    {
-                                        <MudListItem Text="@module.Name">
-                                            <NestedList>
-                                                @foreach(var lesson in module.Lessons)
-                                                {
-                                                    <MudListItem Text="@lesson.Name" DisableRipple="true">
-                                                        <MudGrid>
-                                                            <MudItem xs="4" md="4" Class="ml-10">
-                                                                <MudText Typo="Typo.body1">@lesson.Name</MudText>
-                                                            </MudItem>
-                                                            <MudItem xs="5" md="5">
-                                                                <MudTextField Label="Теория" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
-                                                            </MudItem>
-                                                        </MudGrid>
-                                                    </MudListItem>
-                                                }
-                                            </NestedList>
-                                        </MudListItem>
-                                    }
-                                </NestedList>
-                            </MudListItem>
-                        </MudList>
-                    </MudItem>
-                </MudGrid>
-            </MudItem> *@
         </MudGrid>
     </MudPaper>
 </MudGrid>
 
 
 @code {
-    [Parameter]
-    public string courseId { get; set; }
+    [Parameter] public string courseId { get; set; }
     private Course _course;
-    private bool isActive = false;
-    List<Course> activeCourses;
 
-    protected override async Task OnInitializedAsync()
+    protected override async void OnInitialized()
     {
-        if (userService.CurrentUser != null)
+        if (!string.IsNullOrEmpty(courseId))
         {
-            await GetActiveCourses();
+            _course = courseService.GetCourseById(courseId);
         }
-        StateHasChanged();
     }
 
-    private async Task GetActiveCourses()
+    private string TakeImage(string imageName)
     {
-        // activeCourses = await userService.GetActiveCourses(userService.CurrentUser.Id);
+        var fileContent = fileSystemService.GetFileByName(imageName);
+
+        return $"data:image;base64,{Convert.ToBase64String(fileContent)}";
     }
 
-    private void IsActive()
+    private bool Join()
     {
+        return true;
     }
 
-    protected override void OnInitialized()
+    private bool Leave()
     {
-        // Здесь вы можете использовать параметр Id
-        _course = courseService.GetCourseById(courseId);
+        return true;
     }
 
-    private async Task JoinToCourse()
+    private async Task DownloadFile(string fileName, byte[] fileContent)
     {
-        await userService.UpdateUserAsync(userService.CurrentUser);
-        snackbar.Add("Вы успешно вступили в курс!", Severity.Success);
-        navigationManager.NavigateTo("/myCoursePage", forceLoad: true);
-    }
-
-    private async Task ExitFromCourse()
-    {
-        await userService.UpdateUserAsync(userService.CurrentUser);
-        snackbar.Add("Вы успешно покинули курс!", Severity.Success);
+        if (!String.IsNullOrEmpty(fileName))
+        {
+            await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
+        }
     }
 }

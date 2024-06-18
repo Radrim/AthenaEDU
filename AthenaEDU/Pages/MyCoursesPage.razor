@@ -37,13 +37,13 @@
 
                                 @if (!String.IsNullOrEmpty(item.ImageName))
                                 {
-                                    <MudImage Src="@TakeImage(item.ImageName).Result"
+                                    <MudImage Src="@(TakeImage(item.ImageName))"
                                               Width="200"
                                               Height="200"
                                               ObjectFit="ObjectFit.Cover"
                                               Class="rounded-lg"></MudImage>
                                 }
-                                @if (String.IsNullOrEmpty(item.ImageName))
+                                else
                                 {
                                     <MudImage Src="images/defaultCourseImage.jpg"
                                               Width="200"
@@ -153,21 +153,12 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        if (userService.CurrentUser.MyCourses != null)
-        {
-            return await courseService.GetUserCourses(userService.CurrentUser.MyCourses);
-        }
-
-        else
-        {
-            return new List<Course>();
-        } 
-
+        return await courseService.GetUserCourses(userService.CurrentUser.MyCourses);
     }
 
-    private async Task<string> TakeImage(string imageName)
+    private string TakeImage(string imageName)
     {
-        var imageContent = await fileSystemService.GetFileByName(imageName);
+        var imageContent = fileSystemService.GetFileByName(imageName);
 
         return $"data:image;base64,{Convert.ToBase64String(imageContent)}";
     }

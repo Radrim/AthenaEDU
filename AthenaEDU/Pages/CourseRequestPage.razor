@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations;
 @inject CourseService courseService
 @inject CategoryService categoryService
+@inject FileSystemService fileSystemService
 
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
     <MudPaper Elevation="5" Width="75%" Class="pb-10">
@@ -35,18 +36,22 @@
                     <NavLink href="@($"/courseMainPage/{item.Id}")">
                         <MudPaper Class="mr-5 ml-5" Elevation="5">
                             <MudStack Row="true">
-
-                                @* @if (item.ImageName != "" && item.ImageName != null)
-                            {
-                            <img style="height: 200px; width: 200px; background: rgba(128,128,128,0.06); border-radius: 15px;" class="userImg" src="imgUser/@item.ImageName" alt=" " />
-                            }
-                            @if (item.ImageName == null)
-                            {
-
-                            } *@
-                                @* Src="/images/defaultCourseImage.jpg" *@
-                                <MudImage Src="@item.ImageName" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
-
+                                @if (!String.IsNullOrEmpty(item.ImageName))
+                                {
+                                    <MudImage Src="@TakeImage(item.ImageName)"
+                                              Width="200"
+                                              Height="200"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Class="rounded-lg"></MudImage>
+                                }
+                                @if (String.IsNullOrEmpty(item.ImageName))
+                                {
+                                    <MudImage Src="images/defaultCourseImage.jpg"
+                                              Width="200"
+                                              Height="200"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Class="rounded-lg"></MudImage>
+                                }
                                 <MudGrid>
                                     <MudItem xs="8" md="8">
                                         <MudStack Class="mr-2 ml-2 mt-2">
@@ -76,13 +81,6 @@
 </MudGrid>
 
 @code {
-    int count = 0;
-    List<string> Images = new List<string>()
-    {
-        "/images/Csharp.jpg",
-        "/images/Java.jpg",
-        "/images/Python.jpg",
-    };
     List<Course> Courses = new List<Course>();
     private string selectedCategory;
     List<Category> courseCategories = new List<Category>();
@@ -166,6 +164,13 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return await courseService.GetAllCourses();
+        return await courseService.GetAllUnpublishedCourses();
+    }
+
+    private string TakeImage(string imageName)
+    {
+        var imageContent = fileSystemService.GetFileByName(imageName);
+
+        return $"data:image;base64,{Convert.ToBase64String(imageContent)}";
     }
 }

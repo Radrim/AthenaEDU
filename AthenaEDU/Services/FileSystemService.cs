@@ -19,9 +19,14 @@ namespace AthenaEDU.Services
             return await gridFS.UploadFromBytesAsync(fileName, source);
         }
 
-        public async Task<byte[]> GetFileByName(string name) 
+        public async Task<byte[]> GetFileByNameAsync(string name) 
         {
             return await gridFS.DownloadAsBytesByNameAsync(name);
+        }
+
+        public byte[] GetFileByName(string name)
+        {
+            return  gridFS.DownloadAsBytesByName(name);
         }
     }
 }

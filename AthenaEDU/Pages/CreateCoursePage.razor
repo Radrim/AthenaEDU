@@ -90,7 +90,7 @@
                                             <ChildContent>
                                                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                                                     <MudText Typo="Typo.body1">@module.Name</MudText>
-                                                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Dark" Class="mr-10">Удалить</MudButton>
+                                                    <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => OpenConfirmationDialog(module))" Color="Color.Dark" Class="mr-10">Удалить</MudButton>
                                                 </MudStack>
                                             </ChildContent>
                                             <NestedList>
@@ -169,6 +169,22 @@
         if (!dialogResult.Canceled)
         {
             module.Lessons.Remove(lesson);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenConfirmationDialog(Module module)
+    {
+        var dialogParameters = new DialogParameters();
+        dialogParameters.Add("Action", "Delete");
+
+        var dialogOptions = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialogResult = await DialogService.Show<ConfirmDialog>("Удаление", dialogParameters, dialogOptions).Result;
+
+        if (!dialogResult.Canceled)
+        {
+            _modules.Remove(module);
             StateHasChanged();
         }
     }
@@ -259,7 +275,6 @@
                 await courseService.AddCourseAsync(_course);
                 userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name).Id);
                 await userService.UpdateUserAsync(userService.CurrentUser);
-                navigationManager.NavigateTo("/myCourses", forceLoad: true);
             }
         }
         catch (Exception ex)

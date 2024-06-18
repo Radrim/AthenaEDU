@@ -3,15 +3,16 @@
 @using System.ComponentModel.DataAnnotations;
 @inject CourseService courseService
 @inject CategoryService categoryService
+@inject FileSystemService fileSystemService
 @inject UserService userService
 
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
-    <MudPaper Elevation="5" Width="70%" Class="pb-10">
+    <MudPaper Elevation="5" Width="75%" Class="pb-10">
         <MudGrid Justify="Justify.SpaceAround" Style="display: flex; align-items: center;" Class="mt-5">
             <MudItem xs="6" md="6">
                 <MudStack Row="true" AlignItems="AlignItems.Center">
                     <MudTextField @bind-Value="searchText" Label="Поиск" Variant="Variant.Outlined" Class="mud-textfield-search" Adornment="Adornment.Start"> </MudTextField>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PerformSearch">Искать</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="PerformSearch">Искать</MudButton>
                 </MudStack>
             </MudItem>
             <MudItem xs="4" md="4">
@@ -26,28 +27,36 @@
         </MudGrid>
 
         <MudGrid Justify="Justify.SpaceEvenly" Style="display: flex; align-items: center;" Class="mt-5">
+
             @foreach (var item in Courses)
             {
                 <MudItem xs="12" md="12">
                     <NavLink href="@($"/courseMainPage/{item.Id}")">
-                        <MudPaper Class="mr-5 ml-5" Elevation="2">
+                        <MudPaper Class="mr-5 ml-5" Elevation="5">
                             <MudStack Row="true">
 
-                                @* @if (item.ImageName != "" && item.ImageName != null)
+                                @if (!String.IsNullOrEmpty(item.ImageName))
                                 {
-                                    <img style="height: 200px; width: 200px; background: rgba(128,128,128,0.06); border-radius: 15px;" class="userImg" src="imgUser/@item.ImageName" alt=" " />
+                                    <MudImage Src="@(TakeImage(item.ImageName))"
+                                              Width="200"
+                                              Height="200"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Class="rounded-lg"></MudImage>
                                 }
-                                @if (item.ImageName == null)
+                                else
                                 {
-                                    <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
-                                } *@
+                                    <MudImage Src="images/defaultCourseImage.jpg"
+                                              Width="200"
+                                              Height="200"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Class="rounded-lg"></MudImage>
+                                }
 
-                                <MudImage Src="/images/defaultCourseImage.jpg" Width="200" Height="200" ObjectFit="ObjectFit.Cover" Class="rounded-lg"></MudImage>
                                 <MudStack Class="mr-2 ml-2 mt-2">
-                                    <MudText Typo="Typo.h5" Style="font-weight: bold">@item.Name</MudText>
+                                    <MudText Typo="Typo.h4" Style="font-weight: bold">@item.Name</MudText>
                                     <MudStack Row="true">
-                                        <MudText Typo="Typo.body1"><b>Автор:</b> @item.Author</MudText>
-                                        <MudText Typo="Typo.body1"><b>Категория:</b> @item.Category.Name</MudText>
+                                        <MudText Typo="Typo.body2"><b>Автор:</b> @item.Author</MudText>
+                                        <MudText Typo="Typo.body2"><b>Категория:</b> @item.Category.Name</MudText>
                                     </MudStack>
                                     <MudText Typo="Typo.body1">@item.Description</MudText>
                                 </MudStack>
@@ -144,6 +153,13 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return null; /* await userService.GetActiveCourses(userService.CurrentUser.Id); */
+        return await courseService.GetUserCourses(userService.CurrentUser.MyCourses);
+    }
+
+    private string TakeImage(string imageName)
+    {
+        var imageContent = fileSystemService.GetFileByName(imageName);
+
+        return $"data:image;base64,{Convert.ToBase64String(imageContent)}";
     }
 }
