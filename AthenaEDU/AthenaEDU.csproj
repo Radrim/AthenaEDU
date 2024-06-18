@@ -7,10 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Dialogs\FindPrivateCourse.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MongoDB.Bson" Version="2.25.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.25.0" />
     <PackageReference Include="MongoDB.Driver.GridFS" Version="2.25.0" />
     <PackageReference Include="MudBlazor" Version="6.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Dialogs\FindPrivateCourse.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Dialogs\FindPrivateCourse.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Dialogs\FindPrivateCourse.razor" />
   </ItemGroup>
 
 </Project>

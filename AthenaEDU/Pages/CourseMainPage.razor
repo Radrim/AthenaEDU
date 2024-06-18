@@ -53,7 +53,7 @@
                                 </MudStack>
                             </MudItem>
 
-                            @if (userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)
+                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)
                             {
                                 <MudItem xs="4" md="4" Class="mt-5 ml-16">
                                     <MudStack>
