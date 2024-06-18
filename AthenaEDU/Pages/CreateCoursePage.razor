@@ -5,6 +5,8 @@
 @inject IDialogService DialogService
 @inject UserService userService
 @inject CategoryService categoryService
+@inject FileSystemService fileSystemService
+@inject NavigationManager navigationManager
 
 <PageTitle>Создание курса</PageTitle>
 
@@ -45,18 +47,30 @@
 
             <MudItem xs="12" md="12">
                 <MudStack AlignItems="AlignItems.End" Class="ml-10" Row="true">
-                    @if (fileName != "" && fileName != null)
+                    @if (!String.IsNullOrEmpty(imageName))
                     {
-                        <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
+                        <MudImage Src="@imageName" 
+                                  Alt="Course image" 
+                                  ObjectFit="ObjectFit.Cover" 
+                                  Height="250" 
+                                  Width="250" 
+                                  Elevation="5" 
+                                  Class="rounded-lg" />
                     }
-                    @if (fileName == null)
+                    @if (String.IsNullOrEmpty(imageName))
                     {
-                        <MudImage Src="images/defaultCourseImage.jpg" Alt="User image" ObjectFit="ObjectFit.Cover" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
+                        <MudImage Src="images/defaultCourseImage.jpg" 
+                                  Alt="Course image" 
+                                  ObjectFit="ObjectFit.Cover" 
+                                  Height="250" 
+                                  Width="250" 
+                                  Elevation="5" 
+                                  Class="rounded-lg" />
                     }
 
                     <label for="filePicker2" class="label">
                         <span class="title"><img class="imgtool" src="Image.svg" alt="img" /></span>
-                        <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnSubmit" multiple></InputFile>
+                        <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnFileChanged" multiple></InputFile>
                     </label>
                 </MudStack>
             </MudItem>
@@ -69,7 +83,7 @@
                                 <ChildContent>
                                     <MudText Typo="Typo.h4">Модули</MudText>
                                 </ChildContent>
-                                <NestedList>
+                                <NestedList >
                                     @foreach (var module in _modules)
                                     {
                                         <MudListItem Text="@module.Name">
@@ -111,8 +125,9 @@
 @code {
     private Course _course = new Course();
     private bool courseCreated = false;
-    private string imageData;
-    private string fileName;
+    private byte[] imageContent;
+    private string imageName;
+    private string courseImage;
 
     private List<Category> _categories = new List<Category>();
     private List<Module> _modules = new List<Module>();
@@ -125,19 +140,10 @@
     private Category _selectedCategory;
     private List<RenderFragment> components = new List<RenderFragment>();
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         _selectedAccessibility = courseAccessibility[0];
-        FillCategories();
-
-        FileSystemService.RemoveFolder("imgUser");
-
-        if (_course.ImageName != null)
-        {
-            FileSystemService.DownloadToLocalByName(_course.ImageName, "imgUser");
-            fileName = FileSystemService.GetNameOfDir("imgUser");
-            StateHasChanged();
-        }
+        await FillCategories();
     }
 
     private async Task FillCategories()
@@ -172,6 +178,7 @@
 
         if (!res.Canceled)
         {
+
             module.Lessons.Add((res.Data as Lesson));
             StateHasChanged();
         }
@@ -235,16 +242,18 @@
                 _course.Modules = _modules;
                 _course.Category = _selectedCategory;
 
-                await courseService.AddCourseAsync(_course);
-                //userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name));
-                await userService.UpdateUserAsync(userService.CurrentUser);
-
                 success = true;
 
-                if (fileName != "")
+                if (!String.IsNullOrEmpty(imageName))
                 {
-                    ConfirmImage(fileName);
+                    ConfirmImage();
                 }
+
+                await UploadFiles();
+                await courseService.AddCourseAsync(_course);
+                userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name).Id);
+                await userService.UpdateUserAsync(userService.CurrentUser);
+                navigationManager.NavigateTo("/myCourses", forceLoad: true);
             }
         }
         catch (Exception ex)
@@ -274,36 +283,47 @@
         }
     }
 
-    private async Task OnSubmit(InputFileChangeEventArgs e)
+    private async Task OnFileChanged(InputFileChangeEventArgs e)
     {
-        String folder = "imgUser";
-        String pathFolder = $"/wwwroot/{folder}/";
-        FileSystemService.RemoveFolder(folder);
-        foreach (var file in e.GetMultipleFiles(e.FileCount))
+        long maxSize = 1024 * 1024 * 5;
+        var file = e.File;
+        if (file != null)
         {
-            try
+            using (var ms = new MemoryStream())
             {
-                Stream stream = file.OpenReadStream();
-                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
-                FileStream fs = File.Create(path);
-                await stream.CopyToAsync(fs);
-                stream.Close();
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                await file.OpenReadStream(maxSize).CopyToAsync(ms);
+                imageContent = ms.ToArray();
+                imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
+                courseImage = file.Name;
             }
         }
 
-        fileName = FileSystemService.GetNameOfDir("imgUser");
         StateHasChanged();
     }
 
-    private void ConfirmImage(String filename)
+    private async void ConfirmImage()
     {
-        FileSystemService.UploadImageToDb("imgUser");
-        _course.ImageName = fileName;
-        courseService.UpdateCourseAsync(_course);
+        _course.ImageName = courseImage;
+        await fileSystemService.UploadFileToDbAsync(_course.ImageName, imageContent);
+    }
+
+    private async Task UploadFiles()
+    {
+        if (_modules != null)
+        {
+            foreach (var module in _modules)
+            {
+                if (module.Lessons != null)
+                {
+                    foreach (var lesson in module.Lessons)
+                    {
+                        if (lesson.LessonDocument != null)
+                        {
+                            await fileSystemService.UploadFileToDbAsync(lesson.LessonDocument.FileName, lesson.LessonDocument.FileContent);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

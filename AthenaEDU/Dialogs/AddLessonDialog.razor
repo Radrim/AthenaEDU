@@ -3,48 +3,33 @@
 @inject FileSystemService fileSystemService;
 @inject IJSRuntime jsRuntime;
 
-<MudForm Model="_model">
+<MudForm Model="_lesson">
     <MudDialog>
         <DialogContent>
             <MudGrid Spacing="5" Class="mb-5">
                 <MudItem xs="8">
-                    <MudTextField T="string" Variant="Variant.Outlined" Label="Название" @bind-Value="_model.Name" For="@(() => _model.Name)"></MudTextField>
+                    <MudTextField T="string" 
+                        Variant="Variant.Outlined" 
+                        Label="Название" 
+                        @bind-Value="_lesson.Name" 
+                        For="@(() => _lesson.Name)"></MudTextField>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudText Typo="Typo.h6">Добавить лекцию</MudText>
-                    @* <MudFileUpload T="IBrowserFile" Accept=".pdf,.txt,.docx" AppendMultipleFiles="false" MaxFileSize="10485760" OnFilesChanged="@UploadFile">
-                        <ButtonTemplate>
-                            <MudButton HtmlTag="label"
-                                       Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.CloudUpload"
-                                       for="@context.Id">
-                                       Выбрать документ
-                            </MudButton>
-                        </ButtonTemplate>
-                    </MudFileUpload>
-                    @if (!String.IsNullOrEmpty(fileName))
-                    {
-                        <MudStack Row="true" AlignItems="AlignItems.Center">
-                            <MudIcon Icon="@Icons.Custom.FileFormats.FileDocument"></MudIcon>
-                            <MudText>@fileName</MudText>
-                        </MudStack>
-                    } *@
-
-                    <InputFile OnChange="FileUpload"></InputFile>
-
-                </MudItem>
-                <MudItem xs="5" md="5">
-                    <MudTextField Label="Теория" @bind-Text="fileName" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
+                    <MudText Typo="Typo.h6" Class="mb-1">Добавить лекцию</MudText>
+                    <MudText Typo="Typo.caption">Максимальный размер файла не должен превышать 10МБ!</MudText>
+                    <InputFile id="fileInput" OnChange="FileUpload" accept=".pdf, .txt, .docx"></InputFile>   
                 </MudItem>
 
-                <MudButton OnClick="DownloadFile">Скачать это сраный файл</MudButton>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-1">Добавить тест</MudText>
+                </MudItem>
+                @* <MudButton OnClick="DownloadFile">Скачать это сраный файл</MudButton> *@
 
             </MudGrid>
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="@Close":>Отмена</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewLesson">Сохранить</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewLesson">Добавить</MudButton>
         </DialogActions>
     </MudDialog>
 </MudForm>
@@ -54,19 +39,19 @@
     [Parameter] public Course course { get; set; }
     [Parameter] public Module module { get; set; }
 
-    private Lesson _model;
+    private Lesson _lesson;
 
     private string fileName;
-    private byte[] fileBytes;
+    private byte[] fileContent;
 
     protected async override Task OnInitializedAsync()
     {
-        _model = new Lesson();
+        _lesson = new Lesson();
         await base.OnInitializedAsync();
     }
 
     private void Close() => MudDialog.Close(DialogResult.Cancel());
-    private void CloseBySave() => MudDialog.Close(DialogResult.Ok(_model));
+    private void CloseBySave() => MudDialog.Close(DialogResult.Ok(_lesson));
 
     private void AddNewLesson()
     {
@@ -75,6 +60,16 @@
         try
         {
             success = true;
+
+            if (!String.IsNullOrEmpty(fileName))
+            {
+                Document document = new Document();
+                document.FileName = fileName;
+                document.FileContent = fileContent;
+
+                _lesson.LessonDocument = document;
+            }
+
             CloseBySave();
         }
         catch (Exception ex)
@@ -86,6 +81,7 @@
         {
             snackbar.Add("Новый урок успешно добавлен!", Severity.Success);
         }
+
         else
         {
             snackbar.Add("При создании урока произошла ошибка!", Severity.Error);
@@ -94,25 +90,32 @@
 
     private async Task FileUpload(InputFileChangeEventArgs e)
     {
-        long maxSize = 1024 * 1024 * 5;
-        var file = e.File;
-        if (file != null)
+        long maxSize = 1024 * 1024 * 10;
+
+        if (e.File.Size <= maxSize)
         {
-            using (var ms = new MemoryStream())
+            var file = e.File;
+            if (file != null)
             {
-                await file.OpenReadStream(maxSize).CopyToAsync(ms);
-                fileBytes = ms.ToArray();
-                // Теперь fileBytes содержит содержимое файла в виде массива байтов
-                // Вы можете использовать fileBytes по вашему усмотрению
-                fileName = file.Name;
+                using (var ms = new MemoryStream())
+                {
+                    await file.OpenReadStream(maxSize).CopyToAsync(ms);
+                    fileContent = ms.ToArray();
+                    fileName = file.Name;
+                }
             }
+
+            //await fileSystemService.UploadFileToDbAsync(fileName, fileBytes);
         }
 
-        await fileSystemService.UploadFileToDbAsync(fileName, fileBytes);
+        else
+        {
+            snackbar.Add("Превышен максимально допустимый размер файла (10МБ)!", Severity.Warning);
+        }
     }
 
     private async Task DownloadFile()
     {
-        await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileBytes);
+        await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
     }
 }

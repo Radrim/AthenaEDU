@@ -4,6 +4,7 @@
 @inject ISnackbar snackbar
 @inject IDialogService DialogService
 @inject NavigationManager navigationManager
+@inject FileSystemService fileSystemService
 
 <EditForm Model="@_currentUser" OnValidSubmit="SaveChanges">
     <DataAnnotationsValidator />
@@ -11,19 +12,36 @@
         <MudItem xs="4" md="4">
             <MudGrid Justify="Justify.Center" Style="align-items: center;">
                 <MudItem xs="6" md="6">
-                    <MudStack>
-                        @if (fileName != "" && fileName != null)
+                    <MudStack Spacing="5" Justify="Justify.SpaceAround">
+                        @if (!String.IsNullOrEmpty(imageName))
                         {
-                            <img style="height: 250px; width: 250px; background: rgba(128,128,128,0.06)" class="userImg" src="imgUser/@fileName" alt=" " />
+                            <MudImage Src="@imageName" 
+                                Alt="User image" 
+                                ObjectFit="ObjectFit.Cover" 
+                                Height="250" 
+                                Width="250"
+                                Elevation="5" 
+                                Class="rounded-lg" />
                         }
-                        @if (fileName == null)
+                        @if (String.IsNullOrEmpty(imageName))
                         {
-                            <MudImage Src="images/defaultProfile.png" Alt="User image" ObjectFit="ObjectFit.Fill" Height="250" Width="250" Elevation="5" Class="rounded-lg" />
+                            <MudImage Src="images/defaultProfile.png" 
+                                Alt="User image" 
+                                ObjectFit="ObjectFit.Cover" 
+                                Height="250" 
+                                Width="250" 
+                                Elevation="5" 
+                                Class="rounded-lg" />
                         }
 
                         <label for="filePicker2" class="label">
-                            <span class="title"><img class="imgtool" src="Image.svg" alt="img" /></span>
-                            <InputFile id="filePicker2" accept="image/*" class="invisible" OnChange="@OnSubmit" multiple></InputFile>
+                            <span class="title"><img class="imgtool" src="Image.svg" alt="select image" /></span>
+                            <InputFile id="filePicker2" 
+                                accept="image/*" 
+                                class="invisible" 
+                                OnChange="@OnFileChanged" 
+                                multiple="false">
+                            </InputFile>
                         </label>
 
                     </MudStack>
@@ -33,29 +51,48 @@
         <MudItem xs="3" md="3">
             <MudGrid>
                 <MudItem xs="12" md="10">
-                    <MudField Label="Фамилия" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Surname</MudField>
+                    <MudField Label="Фамилия" 
+                        Variant="Variant.Outlined" 
+                        Adornment="Adornment.Start">@_currentUser.Surname</MudField>
                 </MudItem>
                 <MudItem xs="12" md="10">
-                    <MudField Label="Имя" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Name</MudField>
+                    <MudField Label="Имя" 
+                        Variant="Variant.Outlined" 
+                        Adornment="Adornment.Start">@_currentUser.Name</MudField>
                 </MudItem>
                 <MudItem xs="12" md="10">
-                    <MudField Label="Отчество" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Patronymic</MudField>
+                    <MudField Label="Отчество" 
+                        Variant="Variant.Outlined" 
+                        Adornment="Adornment.Start">@_currentUser.Patronymic</MudField>
                 </MudItem>
                 <MudItem xs="12" md="10">
-                    <MudField Label="Email" Variant="Variant.Outlined" Adornment="Adornment.Start">@_currentUser.Email</MudField>
+                    <MudField Label="Email" 
+                        Variant="Variant.Outlined" 
+                        Adornment="Adornment.Start">@_currentUser.Email</MudField>
                 </MudItem>
             </MudGrid>
         </MudItem>
         <MudItem xs="2" md="2">
             <MudStack Justify="Justify.FlexStart">
-                    <MudButton OnClick="@ChangePassword" Variant="Variant.Filled" Color="Color.Dark" Class="mt-4" FullWidth="true">
-                        Сменить пароль
-                    </MudButton>
+                    <MudButton OnClick="@ChangePassword" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Dark" Class="mt-4" 
+                        FullWidth="true">Сменить пароль</MudButton>
 
-                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="mt-4 fw-bold" FullWidth="true">Сохранить</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Dark" 
+                        Class="mt-4 fw-bold" 
+                        FullWidth="true">Сохранить</MudButton>
 
-                    <MudButton OnClick="@Logout" Variant="Variant.Outlined" Color="Color.Dark" Class="mt-4 fw-bold" FullWidth="true">
-                        <MudText Class="fw-bold" Typo="Typo.button">Выйти</MudText>
+                    <MudButton OnClick="@Logout" 
+                        Variant="Variant.Outlined" 
+                        Color="Color.Dark" 
+                        Class="mt-4 fw-bold" 
+                        FullWidth="true">
+                       <MudText 
+                           Class="fw-bold" 
+                           Typo="Typo.button">Выйти</MudText>
                     </MudButton>
             </MudStack>
         </MudItem>
@@ -63,19 +100,19 @@
 </EditForm>
 
 @code {
-    private User _currentUser = new User();
-    private string fileName;
+    private User _currentUser;
+    private string imageName;
+    private byte[] imageContent;
+    private string userImage;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         _currentUser = userService.CurrentUser;
 
-        FileSystemService.RemoveFolder("imgUser");
-
         if (_currentUser.ImageName != null)
         {
-            FileSystemService.DownloadToLocalByName(_currentUser.ImageName, "imgUser");
-            fileName = FileSystemService.GetNameOfDir("imgUser");
+            var fileContent = await fileSystemService.GetFileByName(_currentUser.ImageName);
+            imageName = $"data:image;base64,{Convert.ToBase64String(fileContent)}";
             StateHasChanged();
         }
     }
@@ -85,13 +122,14 @@
         bool success = false;
         try
         {
-            await userService.UpdateUserAsync(_currentUser);
             success = true;
 
-            if (fileName != "")
+            if (!String.IsNullOrEmpty(imageName))
             {
-                ConfirmImage(fileName);
+                ConfirmImage();
             }
+
+            await userService.UpdateUserAsync(_currentUser);
         }
         catch (Exception ex)
         {
@@ -108,37 +146,28 @@
         }
     }
 
-    private async Task OnSubmit(InputFileChangeEventArgs e)
+    private async Task OnFileChanged(InputFileChangeEventArgs e)
     {
-        String folder = "imgUser";
-        String pathFolder = $"/wwwroot/{folder}/";
-        FileSystemService.RemoveFolder(folder);
-        foreach (var file in e.GetMultipleFiles(e.FileCount))
+        long maxSize = 1024 * 1024 * 5;
+        var file = e.File;
+        if (file != null)
         {
-            try
+            using (var ms = new MemoryStream())
             {
-                Stream stream = file.OpenReadStream();
-                var path = $"{Directory.CreateDirectory(Directory.GetCurrentDirectory() + pathFolder)}{file.Name}";
-                FileStream fs = File.Create(path);
-                await stream.CopyToAsync(fs);
-                stream.Close();
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                await file.OpenReadStream(maxSize).CopyToAsync(ms);
+                imageContent = ms.ToArray();
+                userImage = file.Name;
+                imageName = $"data:image;base64,{Convert.ToBase64String(imageContent)}";
             }
         }
 
-        fileName = FileSystemService.GetNameOfDir("imgUser");
         StateHasChanged();
     }
 
-    private void ConfirmImage(String filename)
+    private async void ConfirmImage()
     {
-        FileSystemService.UploadImageToDb("imgUser");
-        _currentUser.ImageName = fileName;
-        userService.UpdateUserAsync(_currentUser);
+        _currentUser.ImageName = userImage;
+        await fileSystemService.UploadFileToDbAsync(_currentUser.ImageName, imageContent);
     }
 
     private void Logout()

@@ -144,6 +144,6 @@
 
     private async Task<List<Course>> FillCourses()
     {
-        return await userService.GetActiveCourses(userService.CurrentUser.Id);
+        return null; /* await userService.GetActiveCourses(userService.CurrentUser.Id); */
     }
 }

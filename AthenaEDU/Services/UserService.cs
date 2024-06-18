@@ -29,20 +29,11 @@ namespace AthenaEDU.Services
             await _users.ReplaceOneAsync(x => x.Id == user.Id, user);
         }
 
-        public async Task<List<Course>> GetActiveCourses(string userId)
+        public async Task DeleteCourseAsync(string Id) 
         {
-            /*var filter = Builders<User>.Filter.Eq(x => x.Id, userId);
-            var user = await _users.Find(filter).FirstOrDefaultAsync();
-            return user?.ActiveCourses ?? new List<Course>();*/
-            return null;
-        }
-
-        public async Task<List<Course>> GetMyCourses(string userId)
-        {
-            /*var filter = Builders<User>.Filter.Eq(x => x.Id, userId);
-            var user = await _users.Find(filter).FirstOrDefaultAsync();
-            return user?.MyCourses ?? new List<Course>();*/
-            return null;
+            var userFilter = Builders<User>.Filter.AnyEq(u => u.MyCourses, Id);
+            var update = Builders<User>.Update.Pull(u => u.MyCourses, Id);
+            await _users.UpdateManyAsync(userFilter, update);
         }
 
         public void AuthorizeUser(string email, string password)

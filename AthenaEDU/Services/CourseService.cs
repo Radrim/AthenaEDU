@@ -19,6 +19,13 @@ namespace AthenaEDU.Services
             await _courses.InsertOneAsync(course);
         }
 
+        public async Task DeleteCourseAsync(Course course) 
+        {
+            var filter = Builders<Course>.Filter.Eq(x => x.Id, course.Id);
+
+            await _courses.DeleteOneAsync(filter);
+        }
+
         public Course GetCourseByName(string name)
         {
             return _courses.Find(x => x.Name == name).FirstOrDefault();
@@ -37,6 +44,12 @@ namespace AthenaEDU.Services
         public async Task<List<Course>> GetAllCourses()
         {
             return await _courses.FindAsync(new BsonDocument()).Result.ToListAsync();
+        }
+
+        public async Task<List<Course>> GetUserCourses(List<string> coursesIdList) 
+        {
+            var filter = Builders<Course>.Filter.In(x => x.Id, coursesIdList);
+            return await _courses.Find(filter).ToListAsync();
         }
 
         public async Task<List<Course>> GetAllPublishedCourses()

@@ -49,7 +49,7 @@
         try
         {
             User user = userService.GetUserByEmail(model.Email);
-            if (user.Email == model.Email && user.Password == model.Password)
+            if (user != null && user.Email == model.Email && user.Password == model.Password)
             {
                 userService.AuthorizeUser(model.Email, model.Password);
                 success = true;
