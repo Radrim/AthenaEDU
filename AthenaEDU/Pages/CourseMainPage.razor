@@ -8,6 +8,7 @@
 @inject FileSystemService fileSystemService
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
+@inject NavigationManager navigationManager
 
 <PageTitle>@_course.Name</PageTitle>
 
@@ -57,10 +58,20 @@
                             {
                                 <MudItem xs="4" md="4" Class="mt-5 ml-16">
                                     <MudStack>
-                                    <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Dark">Вступить</MudButton>
-                                    <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Info">Покинуть</MudButton>
-                                </MudStack>
-                            </MudItem>
+                                            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Dark">Вступить</MudButton>
+                                            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Info">Покинуть</MudButton>
+                                    </MudStack>
+                                </MudItem>
+                            }
+
+                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic == _course.Author)
+                            {
+                                <MudItem xs="4" md="4" Class="mt-10 ml-16">
+                                    <MudStack>
+                                        <MudField Variant="Variant.Outlined" Label="Ключ">@_course.Id</MudField>
+                                        <MudButton Variant="Variant.Filled" Size="Size.Medium" Class="ml-16 mt-5 mr-16" OnClick="GoToEditCourse" Color="Color.Info">Перейти к редактированию</MudButton>
+                                    </MudStack>
+                                </MudItem>
                             }
 
                             <MudItem xs="7" md="7" Class="ml-10 mt-5">
@@ -173,5 +184,10 @@
         {
             await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
         }
+    }
+
+    private void GoToEditCourse()
+    {
+        navigationManager.NavigateTo($"/editCoursePage/{_course.Id}");
     }
 }

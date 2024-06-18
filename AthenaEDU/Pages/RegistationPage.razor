@@ -56,11 +56,16 @@
         {
             Console.WriteLine($"Ошибка при регистрации пользователя: {ex.Message}");
         }
-
         if (success)
         {
             snackbar.Add("Пользователь успешно зарегистрирован!", Severity.Success);
         }
+
+        else if (userService.GetUserByEmail(model.Email) != null)
+        {
+            snackbar.Add("Пользователь c такой почтой уже существует!", Severity.Error);
+        }
+
         else
         {
             snackbar.Add("При регистрации возникла ошибка!", Severity.Error);

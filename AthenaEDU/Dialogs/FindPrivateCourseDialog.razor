@@ -1,0 +1,51 @@
+﻿@using MongoDB.Bson
+@inject ISnackbar snackbar
+@inject CourseService courseService
+@inject NavigationManager navigationManager
+@inject ISnackbar snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField T="string" Label="Введите ключ" @bind-Value="searchCourseKey"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Close">Отмена</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="FindPrivateCourse">Найти</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private string searchCourseKey;
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+
+    private void FindPrivateCourse()
+    {
+        if (!String.IsNullOrEmpty(searchCourseKey))
+        {
+            try
+            {
+                if (courseService.GetCourseById(searchCourseKey) != null)
+                {
+                    navigationManager.NavigateTo($"/courseMainPage/{searchCourseKey}");
+                    snackbar.Add("Курс найден!", Severity.Success);
+                }
+            }
+            catch
+            {
+                snackbar.Add("Введен неверный ключ!", Severity.Error);
+            }
+        }
+
+        else
+        {
+            snackbar.Add("Ключ не может быть пустым!", Severity.Error);
+        }
+    }
+}
+
