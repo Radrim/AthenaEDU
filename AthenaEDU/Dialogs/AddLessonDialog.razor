@@ -59,7 +59,6 @@
 
         try
         {
-            success = true;
 
             if (!String.IsNullOrEmpty(fileName))
             {
@@ -70,7 +69,13 @@
                 _lesson.LessonDocument = document;
             }
 
-            CloseBySave();
+            if (!String.IsNullOrEmpty(_lesson.Name))
+            {
+                CloseBySave();
+                success = true;
+            }
+
+
         }
         catch (Exception ex)
         {
@@ -80,6 +85,11 @@
         if (success)
         {
             snackbar.Add("Новый урок успешно добавлен!", Severity.Success);
+        }
+
+        else if(!success)
+        {
+            snackbar.Add("Название урока не может быть пустым!", Severity.Error);
         }
 
         else
@@ -116,6 +126,9 @@
 
     private async Task DownloadFile()
     {
-        await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
+        if (!String.IsNullOrEmpty(fileName))
+        {
+            await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
+        }
     }
 }

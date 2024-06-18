@@ -1,5 +1,6 @@
 ﻿@inject ISnackbar snackbar
 @inject CourseService courseService
+@inject IJSRuntime jsRuntime
 
 <MudForm Model="lesson">
     <MudDialog>
@@ -9,8 +10,21 @@
                     <MudTextField T="string" Variant="Variant.Outlined" Label="Название" @bind-Value="lesson.Name" For="@(() => lesson.Name)"></MudTextField>
                 </MudItem>
 
-                <MudItem xs="5" md="5">
-                    <MudTextField Label="Теория" Class="ml-10" Variant="Variant.Outlined" Lines="5" T="string" />
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-1">Добавить лекцию</MudText>
+                    <MudText Typo="Typo.caption">Максимальный размер файла не должен превышать 10МБ!</MudText>
+                    <InputFile id="fileInput" OnChange="FileUpload" accept=".pdf, .txt, .docx"></InputFile>
+                    <MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Center" Class="mt-5">
+                        @if (!String.IsNullOrEmpty(fileName))
+                        {
+                            <MudText Typo="Typo.subtitle2" >@fileName</MudText>
+                            <MudButton OnClick="DownloadFile" Color="Color.Dark" Variant="Variant.Filled" Size="Size.Small">Скачать файл</MudButton>
+                        }
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-1">Добавить тест</MudText>
                 </MudItem>
             </MudGrid>
         </DialogContent>
@@ -26,6 +40,17 @@
     [Parameter] public Lesson lesson { get; set; }
 
     private string fileName;
+    private byte[] fileContent;
+
+    protected override void OnInitialized()
+    {
+        if (lesson.LessonDocument != null)
+        {
+            fileName = lesson.LessonDocument.FileName;
+            fileContent = lesson.LessonDocument.FileContent;
+        }
+        base.OnInitialized();
+    }
 
     private void Close() => MudDialog.Close(DialogResult.Cancel());
     private void CloseBySave() => MudDialog.Close(DialogResult.Ok(lesson));
@@ -36,8 +61,29 @@
 
         try
         {
-            success = true;
-            CloseBySave();
+            // Document document = new Document();
+            // document.FileContent = fileContent;
+            // document.FileName = fileName;
+            // lesson.LessonDocument = document;
+            // success = true;
+            // CloseBySave();
+
+            if (!String.IsNullOrEmpty(fileName))
+            {
+                Document document = new Document();
+                document.FileName = fileName;
+                document.FileContent = fileContent;
+
+                lesson.LessonDocument = document;
+            }
+
+            if (!String.IsNullOrEmpty(lesson.Name))
+            {
+                CloseBySave();
+                success = true;
+            }
+
+            
         }
         catch (Exception ex)
         {
@@ -48,9 +94,49 @@
         {
             snackbar.Add("Урок успешно изменен!", Severity.Success);
         }
+
+        else if (!success)
+        {
+            snackbar.Add("Название урока не может быть пустым!", Severity.Error);
+        }
+
         else
         {
             snackbar.Add("При редактировании урока произошла ошибка!", Severity.Error);
+        }
+    }
+
+    private async Task FileUpload(InputFileChangeEventArgs e)
+    {
+        long maxSize = 1024 * 1024 * 10;
+
+        if (e.File.Size <= maxSize)
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await file.OpenReadStream(maxSize).CopyToAsync(ms);
+                    fileContent = ms.ToArray();
+                    fileName = file.Name;
+                }
+            }
+
+            //await fileSystemService.UploadFileToDbAsync(fileName, fileBytes);
+        }
+
+        else
+        {
+            snackbar.Add("Превышен максимально допустимый размер файла (10МБ)!", Severity.Warning);
+        }
+    }
+
+    private async Task DownloadFile()
+    {
+        if (!String.IsNullOrEmpty(fileName))
+        {
+            await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
         }
     }
 }

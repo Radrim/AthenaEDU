@@ -87,6 +87,12 @@
                                     @foreach (var module in _modules)
                                     {
                                         <MudListItem Text="@module.Name">
+                                            <ChildContent>
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                                    <MudText Typo="Typo.body1">@module.Name</MudText>
+                                                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Dark" Class="mr-10">Удалить</MudButton>
+                                                </MudStack>
+                                            </ChildContent>
                                             <NestedList>
                                                 <MudListItem Text="Уроки" DisableRipple="true">
                                                     <MudTable Items="@module.Lessons" Style="width: 95%">
@@ -94,13 +100,13 @@
                                                             <MudTh>Название урока</MudTh>
                                                             <MudTh></MudTh>
                                                             <MudTh></MudTh>
-                                                            <MudTh><MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
+                                                            <MudTh><MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Small" OnClick="@(() => OpenAddLessonDialog(module))">Добавить урок</MudButton></MudTh>
                                             
                                                         </HeaderContent>
                                                         <RowTemplate>
                                                             <MudTd DataLabel="Название урока">@context.Name</MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="@(() => OpenEditLessonDialog(module, context))">Редактировать</MudButton></MudTd>
-                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Small" OnClick="@(() => OpenEditLessonDialog(module, context))">Редактировать</MudButton></MudTd>
+                                                            <MudTd DataLabel=" "><MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Small" OnClick="@(() => OpenConfirmationDialog(module, context))">Удалить</MudButton></MudTd>
                                                         </RowTemplate>
                                                     </MudTable>
                                                 </MudListItem>
