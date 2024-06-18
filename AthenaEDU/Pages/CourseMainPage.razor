@@ -54,12 +54,11 @@
                                 </MudStack>
                             </MudItem>
 
-                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)
+                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author && userService.CurrentUser.Role != "Admin")
                             {
                                 <MudItem xs="4" md="4" Class="mt-5 ml-16">
                                     <MudStack>
-                                            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Dark">Вступить</MudButton>
-                                            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" Color="Color.Info">Покинуть</MudButton>
+                                        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" OnClick="IsJoined" Color="Color.Dark">@(userService.IsActive(courseId) ? "Покинуть" : "Вступить")</MudButton>
                                     </MudStack>
                                 </MudItem>
                             }
@@ -80,7 +79,7 @@
                         </MudGrid>
                     </MudTabPanel>
 
-                    <MudTabPanel Text="Учебные материалы">
+                    <MudTabPanel Text="Учебные материалы" Disabled="@(userService.CurrentUser == null || !userService.IsActive(courseId))">
                         <MudGrid Justify="Justify.FlexStart">
                             <MudItem xs="12" md="12">
                                 <MudGrid>
@@ -93,14 +92,14 @@
                                                 <NestedList>
                                                     @foreach (var module in _course.Modules)
                                                     {
-                                                        <MudListItem>
+                                                        <MudListItem InitiallyExpanded="true">
                                                             <ChildContent>
                                                                 <MudText Typo="Typo.h5">@module.Name</MudText>
                                                             </ChildContent>
                                                             <NestedList>
                                                                 @foreach (var lesson in module.Lessons)
                                                                 {
-                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true">
+                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true" InitiallyExpanded="true">
                                                                         <ChildContent>
                                                                             <MudStack Class="ml-4 mr-5" Row="true" Justify="Justify.SpaceBetween">
                                                                                 <MudText Typo="Typo.h6">@lesson.Name</MudText>
@@ -168,14 +167,20 @@
         return $"data:image;base64,{Convert.ToBase64String(fileContent)}";
     }
 
-    private bool Join()
+    private async void IsJoined()
     {
-        return true;
-    }
+        if (!userService.IsActive(courseId))
+        {
+            userService.CurrentUser.ActiveCourses.Add(courseId);
+            await userService.UpdateUserAsync(userService.CurrentUser);
+        }
 
-    private bool Leave()
-    {
-        return true;
+        else
+        {
+            userService.CurrentUser.ActiveCourses.Remove(courseId);
+            await userService.UpdateUserAsync(userService.CurrentUser);
+        }
+        StateHasChanged();
     }
 
     private async Task DownloadFile(string fileName, byte[] fileContent)

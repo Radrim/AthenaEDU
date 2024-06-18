@@ -29,6 +29,11 @@ namespace AthenaEDU.Services
             await _users.ReplaceOneAsync(x => x.Id == user.Id, user);
         }
 
+        public bool IsActive(string courseId) 
+        {
+            return CurrentUser.ActiveCourses.Contains(courseId);
+        }
+
         public async Task DeleteCourseAsync(string Id) 
         {
             var userFilter = Builders<User>.Filter.AnyEq(u => u.MyCourses, Id);

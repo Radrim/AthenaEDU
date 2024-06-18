@@ -5,6 +5,8 @@
 @inject CategoryService categoryService
 @inject FileSystemService fileSystemService
 
+<PageTitle>Заявки</PageTitle>
+
 <MudGrid Justify="Justify.Center" Style="width: 100%; height: 100%;">
     <MudPaper Elevation="5" Width="75%" Class="pb-10">
         <MudGrid Justify="Justify.SpaceAround" Style="display: flex; align-items: center;" Class="mt-5">
@@ -34,7 +36,7 @@
             {
                 <MudItem xs="12" md="12">
                     <MudPaper Class="mr-5 ml-5" Elevation="5" Style="display:flex; flex-direction: row; justify-content: space-between">
-                        <NavLink href="@($"/courseMainPage/{item.Id}")" style="display:flex; flex: 1;">
+                        <NavLink href="@($"/courseMainRequestPage/{item.Id}")" style="display:flex; flex: 1;">
                             <MudStack Row="true">
                                 @if (!String.IsNullOrEmpty(item.ImageName))
                                 {
