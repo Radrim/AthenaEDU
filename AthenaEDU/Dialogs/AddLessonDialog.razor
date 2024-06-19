@@ -23,13 +23,33 @@
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Class="mb-1">Добавить тест</MudText>
                 </MudItem>
-                @* <MudButton OnClick="DownloadFile">Скачать это сраный файл</MudButton> *@
+
+                <MudItem xs="12">
+                    <MudContainer>
+                        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Создание теста</MudText>
+                        <MudTextField Label="Название теста" @bind-Value="test.Name" Class="mb-4" />
+
+                        <MudText Typo="Typo.h6" Class="mb-2">Вопросы</MudText>
+                        @foreach (var question in test.Questions)
+                        {
+                            <MudTextField Label="Текст вопроса" @bind-Value="question.Text" Class="mb-2" />
+                            <MudTextField Label="Правильный ответ" @bind-Value="question.CorrectAnswer" Class="mb-2" />
+                            <MudText Typo="Typo.body1" Class="mb-2">Варианты ответов</MudText>
+                            @for (int i = 0; i < question.AnswerOptions.Count; i++)
+                            {
+                                <MudTextField T="string" Label="Вариант ответа" @bind-Value="question.AnswerOptions[i]" Class="mb-2" />
+                            }
+                            <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="() => AddAnswerOption(question)" Class="mb-4">Добавить вариант ответа</MudButton>
+                        }
+                        <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="AddQuestion" Class="mb-4">Добавить вопрос</MudButton>
+                    </MudContainer>
+                </MudItem>
 
             </MudGrid>
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="@Close":>Отмена</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewLesson">Добавить</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="AddNewLesson">Добавить</MudButton>
         </DialogActions>
     </MudDialog>
 </MudForm>
@@ -43,11 +63,24 @@
 
     private string fileName;
     private byte[] fileContent;
+    private Test test = new Test();
 
     protected async override Task OnInitializedAsync()
     {
         _lesson = new Lesson();
+        _lesson.LessonTest = new Test();
+        test.Questions = new List<Question>();
         await base.OnInitializedAsync();
+    }
+
+    private void AddQuestion()
+    {
+        test.Questions.Add(new Question { AnswerOptions = new List<string>() });
+    }
+
+    private void AddAnswerOption(Question question)
+    {
+        question.AnswerOptions.Add("");
     }
 
     private void Close() => MudDialog.Close(DialogResult.Cancel());
@@ -67,6 +100,7 @@
                 document.FileContent = fileContent;
 
                 _lesson.LessonDocument = document;
+                _lesson.LessonTest = test;
             }
 
             if (!String.IsNullOrEmpty(_lesson.Name))

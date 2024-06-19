@@ -164,7 +164,7 @@
                                 </MudDataGrid>
                             </MudTabPanel>
 
-                            <MudTabPanel Text="Заявки" Disabled="@(!_course.isPrivate || userService.CurrentUser == null || userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)">
+                            <MudTabPanel Text="Заявки" Disabled="@(!_course.isPrivate && userService.CurrentUser == null || userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)">
                                 <MudDataGrid Items="_course.studentsRequest" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
                                     <ToolBarContent>
                                         <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Заявки</MudText>
@@ -178,18 +178,12 @@
                                         {
                                             <TemplateColumn>
                                                 <CellTemplate>
-                                                    @if (!StudentJoined(context.Item))
-                                                    {
                                                         <MudButton Color="Color.Dark" OnClick="(async () => await AcceptStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
-                                                    }
                                                 </CellTemplate>
                                             </TemplateColumn>
                                             <TemplateColumn>
                                                 <CellTemplate>
-                                                    @if (!StudentJoined(context.Item))
-                                                    {
-                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
-                                                    }
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Отклонить</MudButton>
                                                 </CellTemplate>
                                             </TemplateColumn>
                                         }
@@ -233,6 +227,7 @@
             _course.studentsRequest.Add(userService.CurrentUser);
             await courseService.UpdateCourseAsync(_course);
             snackBar.Add("Заявка на вступление в курс отправлена!", Severity.Success);
+            StateHasChanged();
         }
 
         else
@@ -240,8 +235,9 @@
             userService.CurrentUser.ActiveCourses.Remove(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно покинули в курс!", Severity.Success);
+            StateHasChanged();
         }
-        StateHasChanged();
+
     }
 
     private async void IsJoined()
@@ -251,6 +247,7 @@
             userService.CurrentUser.ActiveCourses.Add(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно вступили в курс!", Severity.Success);
+            StateHasChanged();
         }
 
         else
@@ -258,8 +255,8 @@
             userService.CurrentUser.ActiveCourses.Remove(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно покинули в курс!", Severity.Success);
+            StateHasChanged();
         }
-        StateHasChanged();
     }
 
     private async Task DownloadFile(string fileName, byte[] fileContent)
@@ -275,11 +272,6 @@
         navigationManager.NavigateTo($"/editCoursePage/{_course.Id}");
     }
 
-    private bool StudentJoined(User student)
-    {
-        return _course.studentsRequest.Contains(student);
-    }
-
     private async Task AcceptStudentRequest(User student)
     {
         _course.studentsRequest.Remove(student);
@@ -287,6 +279,7 @@
         student.ActiveCourses.Add(courseId);
         await userService.UpdateUserAsync(student);
         snackBar.Add("Заявка успешно принята!", Severity.Success);
+        _students = await userService.GetJoinedUsersByCourseId(courseId);
         StateHasChanged();
     }
 
@@ -295,6 +288,7 @@
         _course.studentsRequest.Remove(student);
         await courseService.UpdateCourseAsync(_course);
         snackBar.Add("Заявка успешно отклонена!", Severity.Success);
+        _students = await userService.GetJoinedUsersByCourseId(courseId);
         StateHasChanged();
     }
 }

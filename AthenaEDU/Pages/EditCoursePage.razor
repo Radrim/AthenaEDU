@@ -70,7 +70,10 @@
 
                             <MudItem xs="4" md="4" Class="mt-10 ml-16">
                                 <MudStack>
-                                    <MudField Variant="Variant.Outlined" FullWidth="false" Label="Ключ">@_course.Id</MudField>
+                                    @if (_course.isPrivate)
+                                    {
+                                        <MudField Variant="Variant.Outlined" FullWidth="false" Label="Ключ">@_course.Id</MudField>
+                                    }
                                     <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" OnClick="SaveChanges" Color="Color.Dark">Сохранить изменения</MudButton>
                                     <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" OnClick="OpenConfirmationDialog" Color="Color.Info">Удалить курс</MudButton>
                                 </MudStack>
@@ -116,18 +119,6 @@
                                                                                     <MudStack Row="true">
                                                                                         <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Small" OnClick="@(() => OpenEditLessonDialog(module, lesson))">Редактировать</MudButton>
                                                                                         <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Small" OnClick="@(() => OpenConfirmationDialog(module, lesson))">Удалить</MudButton>
-                                                                                    </MudStack>
-                                                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                                                                                        @if (lesson.LessonDocument != null)
-                                                                                        {@* 
-                                                                                            <MudText Typo="Typo.body1"><b>Лекция: </b></MudText>
-                                                                                            <MudText Typo="Typo.subtitle1"> @lesson.LessonDocument.FileName</MudText>
-                                                                                            <MudButton OnClick="@(async () =>
-                                                                                                    await DownloadFile(lesson.LessonDocument.FileName, lesson.LessonDocument.FileContent))"
-                                                                                                       Color="Color.Dark"
-                                                                                                       Variant="Variant.Filled"
-                                                                                                       Size="Size.Small">Скачать файл</MudButton> *@
-                                                                                        }
                                                                                     </MudStack>
 
                                                                                     @if (lesson.LessonTest != null)
@@ -185,18 +176,12 @@
                                         {
                                             <TemplateColumn>
                                                 <CellTemplate>
-                                                    @if (!StudentJoined(context.Item))
-                                                    {
                                                         <MudButton Color="Color.Dark" OnClick="(async () => await AcceptStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
-                                                    }
                                                 </CellTemplate>
                                             </TemplateColumn>
                                             <TemplateColumn>
                                                 <CellTemplate>
-                                                    @if (!StudentJoined(context.Item))
-                                                    {
-                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
-                                                    }
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Отклонить</MudButton>
                                                 </CellTemplate>
                                             </TemplateColumn>
                                         }
@@ -452,18 +437,14 @@
         }
     }
 
-    private bool StudentJoined(User student)
-    {
-        return _course.studentsRequest.Contains(student);
-    }
-
     private async Task AcceptStudentRequest(User student)
     {
         _course.studentsRequest.Remove(student);
         await courseService.UpdateCourseAsync(_course);
         student.ActiveCourses.Add(courseId);
         await userService.UpdateUserAsync(student);
-        snackBar.Add("Заявка успешно принята!", Severity.Success);
+        snackBar.Add("Заявка успешно принята!", Severity.Success); 
+        _students = await userService.GetJoinedUsersByCourseId(courseId);
         StateHasChanged();
     }
 
@@ -472,6 +453,7 @@
         _course.studentsRequest.Remove(student);
         await courseService.UpdateCourseAsync(_course);
         snackBar.Add("Заявка успешно отклонена!", Severity.Success);
+        _students = await userService.GetJoinedUsersByCourseId(courseId);
         StateHasChanged();
     }
 }

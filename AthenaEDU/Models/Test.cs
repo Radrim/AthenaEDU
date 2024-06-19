@@ -9,7 +9,7 @@ namespace AthenaEDU.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string Name { get; set; }
-        public string Result { get; set; }
+        public string? Result { get; set; }
         public bool IsPassed { get; set; } = false;
         public List<Question> Questions { get; set; }
         public Test() { }
