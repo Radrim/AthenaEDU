@@ -15,6 +15,7 @@ namespace AthenaEDU.Models
         public bool isPrivate { get; set; }
         public bool? isPublished { get; set; } = null;
         public List<Module> Modules { get; set; } = new List<Module>();
+        public List<User> studentsRequest { get; set; } = new List<User>();
         public Category Category { get; set; }
 
         public Course() { }

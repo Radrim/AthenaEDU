@@ -54,11 +54,20 @@
                                 </MudStack>
                             </MudItem>
 
-                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author && userService.CurrentUser.Role != "Admin")
+                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author && userService.CurrentUser.Role != "Admin" && _course.isPrivate == false)
                             {
                                 <MudItem xs="4" md="4" Class="mt-5 ml-16">
                                     <MudStack>
                                         <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" OnClick="IsJoined" Color="Color.Dark">@(userService.IsActive(courseId) ? "Покинуть" : "Вступить")</MudButton>
+                                    </MudStack>
+                                </MudItem>
+                            }
+
+                            @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author && userService.CurrentUser.Role != "Admin" && _course.isPrivate)
+                            {
+                                <MudItem xs="4" md="4" Class="mt-5 ml-16">
+                                    <MudStack>
+                                        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="ml-16 mt-5 mr-16" OnClick="SendRequestToJoin" Color="Color.Dark">@(userService.IsActive(courseId) ? "Покинуть" : "Вступить")</MudButton>
                                     </MudStack>
                                 </MudItem>
                             }
@@ -140,6 +149,54 @@
                     </MudTabPanel>
 
                     <MudTabPanel Text="Участники">
+                        <MudTabs>
+                            <MudTabPanel Text="Студенты">
+                                <MudDataGrid Items="_students" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Студенты</MudText>
+                                        <MudSpacer></MudSpacer>
+                                    </ToolBarContent>
+                                    <Columns>
+                                        <PropertyColumn Property="x => x.Surname" Title="Фамилия" />
+                                        <PropertyColumn Property="x => x.Name" Title="Имя" />
+                                        <PropertyColumn Property="x => x.Patronymic" Title="Отчество" />
+                                    </Columns>
+                                </MudDataGrid>
+                            </MudTabPanel>
+
+                            <MudTabPanel Text="Заявки" Disabled="@(!_course.isPrivate || userService.CurrentUser == null || userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)">
+                                <MudDataGrid Items="_course.studentsRequest" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Заявки</MudText>
+                                        <MudSpacer></MudSpacer>
+                                    </ToolBarContent>
+                                    <Columns>
+                                        <PropertyColumn Property="x => x.Surname" Title="Фамилия" />
+                                        <PropertyColumn Property="x => x.Name" Title="Имя" />
+                                        <PropertyColumn Property="x => x.Patronymic" Title="Отчество" />
+                                        @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic == _course.Author)
+                                        {
+                                            <TemplateColumn>
+                                                <CellTemplate>
+                                                    @if (!StudentJoined(context.Item))
+                                                    {
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await AcceptStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
+                                                    }
+                                                </CellTemplate>
+                                            </TemplateColumn>
+                                            <TemplateColumn>
+                                                <CellTemplate>
+                                                    @if (!StudentJoined(context.Item))
+                                                    {
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
+                                                    }
+                                                </CellTemplate>
+                                            </TemplateColumn>
+                                        }
+                                    </Columns>
+                                </MudDataGrid>
+                            </MudTabPanel>
+                        </MudTabs>
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>
@@ -151,12 +208,14 @@
 @code {
     [Parameter] public string courseId { get; set; }
     private Course _course;
+    private List<User> _students = new List<User>();
 
     protected override async void OnInitialized()
     {
         if (!string.IsNullOrEmpty(courseId))
         {
             _course = courseService.GetCourseById(courseId);
+            _students = await userService.GetJoinedUsersByCourseId(courseId);
         }
     }
 
@@ -165,6 +224,24 @@
         var fileContent = fileSystemService.GetFileByName(imageName);
 
         return $"data:image;base64,{Convert.ToBase64String(fileContent)}";
+    }
+
+    private async void SendRequestToJoin()
+    {
+        if (!userService.IsActive(courseId))
+        {
+            _course.studentsRequest.Add(userService.CurrentUser);
+            await courseService.UpdateCourseAsync(_course);
+            snackBar.Add("Заявка на вступление в курс отправлена!", Severity.Success);
+        }
+
+        else
+        {
+            userService.CurrentUser.ActiveCourses.Remove(courseId);
+            await userService.UpdateUserAsync(userService.CurrentUser);
+            snackBar.Add("Вы успешно покинули в курс!", Severity.Success);
+        }
+        StateHasChanged();
     }
 
     private async void IsJoined()
@@ -196,5 +273,28 @@
     private void GoToEditCourse()
     {
         navigationManager.NavigateTo($"/editCoursePage/{_course.Id}");
+    }
+
+    private bool StudentJoined(User student)
+    {
+        return _course.studentsRequest.Contains(student);
+    }
+
+    private async Task AcceptStudentRequest(User student)
+    {
+        _course.studentsRequest.Remove(student);
+        await courseService.UpdateCourseAsync(_course);
+        student.ActiveCourses.Add(courseId);
+        await userService.UpdateUserAsync(student);
+        snackBar.Add("Заявка успешно принята!", Severity.Success);
+        StateHasChanged();
+    }
+
+    private async Task RejectStudentRequest(User student)
+    {
+        _course.studentsRequest.Remove(student);
+        await courseService.UpdateCourseAsync(_course);
+        snackBar.Add("Заявка успешно отклонена!", Severity.Success);
+        StateHasChanged();
     }
 }

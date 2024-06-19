@@ -19,6 +19,20 @@ namespace AthenaEDU.Services
             await _users.InsertOneAsync(user);
         }
 
+        public async Task<List<User>> GetJoinedUsersByCourseId(string courseId) 
+        {
+            var filter = Builders<User>.Filter.AnyEq(u => u.ActiveCourses, courseId);
+            var users = await _users.Find(filter).ToListAsync();
+            return users;
+        }
+
+        public bool IsStudentInCourse(User student, string courseId)
+        {
+            // Предполагаем, что у вас есть доступ к базе данных или к списку студентов
+            var user = _users.Find(u => u.Id == student.Id).FirstOrDefault();
+            return user != null && user.ActiveCourses.Contains(courseId);
+        }
+
         public User GetUserByEmail(string email)
         {
             return _users.Find(x => x.Email == email).FirstOrDefault();

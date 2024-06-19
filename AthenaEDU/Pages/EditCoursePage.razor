@@ -156,7 +156,54 @@
                     </MudTabPanel>
 
                     <MudTabPanel Text="Участники">
+                        <MudTabs>
+                            <MudTabPanel Text="Студенты">
+                                <MudDataGrid Items="_students" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Студенты</MudText>
+                                        <MudSpacer></MudSpacer>
+                                    </ToolBarContent>
+                                    <Columns>
+                                        <PropertyColumn Property="x => x.Surname" Title="Фамилия" />
+                                        <PropertyColumn Property="x => x.Name" Title="Имя" />
+                                        <PropertyColumn Property="x => x.Patronymic" Title="Отчество" />
+                                    </Columns>
+                                </MudDataGrid>
+                            </MudTabPanel>
 
+                            <MudTabPanel Text="Заявки" Disabled="@(!_course.isPrivate || userService.CurrentUser == null || userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic != _course.Author)">
+                                <MudDataGrid Items="_course.studentsRequest" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
+                                    <ToolBarContent>
+                                        <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Заявки</MudText>
+                                        <MudSpacer></MudSpacer>
+                                    </ToolBarContent>
+                                    <Columns>
+                                        <PropertyColumn Property="x => x.Surname" Title="Фамилия" />
+                                        <PropertyColumn Property="x => x.Name" Title="Имя" />
+                                        <PropertyColumn Property="x => x.Patronymic" Title="Отчество" />
+                                        @if (userService.CurrentUser != null && userService.CurrentUser.Name + " " + userService.CurrentUser.Patronymic == _course.Author)
+                                        {
+                                            <TemplateColumn>
+                                                <CellTemplate>
+                                                    @if (!StudentJoined(context.Item))
+                                                    {
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await AcceptStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
+                                                    }
+                                                </CellTemplate>
+                                            </TemplateColumn>
+                                            <TemplateColumn>
+                                                <CellTemplate>
+                                                    @if (!StudentJoined(context.Item))
+                                                    {
+                                                        <MudButton Color="Color.Dark" OnClick="(async () => await RejectStudentRequest(context.Item))" Variant="Variant.Outlined">Принять</MudButton>
+                                                    }
+                                                </CellTemplate>
+                                            </TemplateColumn>
+                                        }
+                                    </Columns>
+                                </MudDataGrid>
+                            </MudTabPanel>
+                        </MudTabs>
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>
@@ -171,7 +218,7 @@
     private byte[] imageContent;
     private string imageName;
     private string courseImage;
-
+    private List<User> _students = new List<User>();
     private List<Category> _categories = new List<Category>();
     private List<string> courseAccessibility = new List<string>()
     {
@@ -189,6 +236,7 @@
         if (!String.IsNullOrEmpty(courseId))
         {
             _course = courseService.GetCourseById(courseId);
+            _students = await userService.GetJoinedUsersByCourseId(courseId);
 
             if (_course != null)
             {
@@ -402,5 +450,28 @@
         {
             await jsRuntime.InvokeVoidAsync("downloadFile", fileName, fileContent);
         }
+    }
+
+    private bool StudentJoined(User student)
+    {
+        return _course.studentsRequest.Contains(student);
+    }
+
+    private async Task AcceptStudentRequest(User student)
+    {
+        _course.studentsRequest.Remove(student);
+        await courseService.UpdateCourseAsync(_course);
+        student.ActiveCourses.Add(courseId);
+        await userService.UpdateUserAsync(student);
+        snackBar.Add("Заявка успешно принята!", Severity.Success);
+        StateHasChanged();
+    }
+
+    private async Task RejectStudentRequest(User student)
+    {
+        _course.studentsRequest.Remove(student);
+        await courseService.UpdateCourseAsync(_course);
+        snackBar.Add("Заявка успешно отклонена!", Severity.Success);
+        StateHasChanged();
     }
 }

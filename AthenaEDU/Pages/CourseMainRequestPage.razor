@@ -129,6 +129,17 @@
                     </MudTabPanel>
 
                     <MudTabPanel Text="Участники">
+                        <MudDataGrid Items="@(_course.isPrivate ? _course.studentsRequest : _students)" Class="ml-15 mr-15 mb-15 mt-10" Elevation="5" Square>
+                            <ToolBarContent>
+                                <MudText Typo="Typo.h4" Align="Align.Center" Class="object-center">Студенты</MudText>
+                                <MudSpacer></MudSpacer>
+                            </ToolBarContent>
+                            <Columns>
+                                <PropertyColumn Property="x => x.Surname" Title="Фамилия" />
+                                <PropertyColumn Property="x => x.Name" Title="Имя" />
+                                <PropertyColumn Property="x => x.Patronymic" Title="Отчество" />
+                            </Columns>
+                        </MudDataGrid>
                     </MudTabPanel>
                 </MudTabs>
             </MudItem>
@@ -141,6 +152,7 @@
     [Parameter]
     public string courseId { get; set; }
     private Course _course;
+    private List<User> _students = new List<User>();
 
     private async Task AcceptRequest()
     {
@@ -158,9 +170,10 @@
         navigationManager.NavigateTo("/courseRequest");
     }
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         _course = courseService.GetCourseById(courseId);
+        _students = await userService.GetJoinedUsersByCourseId(courseId);
     }
 
     private async Task DownloadFile(string fileName, byte[] fileContent)
