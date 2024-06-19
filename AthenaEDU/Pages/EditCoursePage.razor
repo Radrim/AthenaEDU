@@ -95,7 +95,7 @@
                                                 <NestedList>
                                                     @foreach (var module in _course.Modules)
                                                     {
-                                                        <MudListItem InitiallyExpanded="true">
+                                                        <MudListItem InitiallyExpanded="true" Style="border-top: 1px solid black;">
                                                             <ChildContent>
                                                                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                                                                     <MudText Typo="Typo.h5">@module.Name</MudText>
@@ -107,7 +107,7 @@
                                                             <NestedList>
                                                                 @foreach (var lesson in module.Lessons)
                                                                 {
-                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true">
+                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true" Style="border-top: 1px solid black;">
                                                                         <ChildContent>
                                                                             <MudStack Class="ml-4 mr-5" Row="true" Justify="Justify.SpaceBetween">
                                                                                 <MudText Typo="Typo.h6">@lesson.Name</MudText>

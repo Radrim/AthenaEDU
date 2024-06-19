@@ -81,14 +81,14 @@
                                                 <NestedList>
                                                     @foreach (var module in _course.Modules)
                                                     {
-                                                        <MudListItem InitiallyExpanded="true">
+                                                        <MudListItem InitiallyExpanded="true" Style="border-top: 1px solid black;">
                                                             <ChildContent>
                                                                 <MudText Typo="Typo.h5">@module.Name</MudText>
                                                             </ChildContent>
                                                             <NestedList>
                                                                 @foreach (var lesson in module.Lessons)
                                                                 {
-                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true" InitiallyExpanded="true">
+                                                                    <MudListItem Text="@lesson.Name" DisableRipple="true" InitiallyExpanded="true" Style="border-top: 1px solid black;">
                                                                         <ChildContent>
                                                                             <MudStack Class="ml-4 mr-5" Row="true" Justify="Justify.SpaceBetween">
                                                                                 <MudText Typo="Typo.h6">@lesson.Name</MudText>
@@ -146,16 +146,16 @@
     {
         _course.isPublished = true;
         await courseService.UpdateCourseAsync(_course);
-        navigationManager.NavigateTo("/courseRequest");
         snackbar.Add("Заявка одобрена!", Severity.Success);
+        navigationManager.NavigateTo("/courseRequest");
     }
 
     private async Task DeclineRequest()
     {
         _course.isPublished = false;
         await courseService.UpdateCourseAsync(_course);
-        navigationManager.NavigateTo("/courseRequest");
         snackbar.Add("Заявка отклонена!", Severity.Success);
+        navigationManager.NavigateTo("/courseRequest");
     }
 
     protected override void OnInitialized()
