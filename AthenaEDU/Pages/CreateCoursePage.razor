@@ -275,6 +275,7 @@
                 await courseService.AddCourseAsync(_course);
                 userService.CurrentUser.MyCourses.Add(courseService.GetCourseByName(_course.Name).Id);
                 await userService.UpdateUserAsync(userService.CurrentUser);
+                navigationManager.NavigateTo("/myCourses", forceLoad: true);
             }
         }
         catch (Exception ex)

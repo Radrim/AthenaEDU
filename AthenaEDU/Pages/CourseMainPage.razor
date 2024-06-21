@@ -127,10 +127,10 @@
                                                                                         }
                                                                                     </MudStack>
 
-                                                                                    @if (lesson.LessonTest == null)
+                                                                                    @* @if (lesson.LessonTest != null)
                                                                                     {
                                                                                         <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Large">Пройти тест</MudButton>
-                                                                                    }
+                                                                                    } *@
                                                                                 </MudStack>
                                                                             </MudStack>
                                                                         </ChildContent>
@@ -235,6 +235,7 @@
             userService.CurrentUser.ActiveCourses.Remove(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно покинули в курс!", Severity.Success);
+            _students = await userService.GetJoinedUsersByCourseId(courseId);
             StateHasChanged();
         }
 
@@ -247,6 +248,7 @@
             userService.CurrentUser.ActiveCourses.Add(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно вступили в курс!", Severity.Success);
+            _students = await userService.GetJoinedUsersByCourseId(courseId);
             StateHasChanged();
         }
 
@@ -255,6 +257,7 @@
             userService.CurrentUser.ActiveCourses.Remove(courseId);
             await userService.UpdateUserAsync(userService.CurrentUser);
             snackBar.Add("Вы успешно покинули в курс!", Severity.Success);
+            _students = await userService.GetJoinedUsersByCourseId(courseId);
             StateHasChanged();
         }
     }

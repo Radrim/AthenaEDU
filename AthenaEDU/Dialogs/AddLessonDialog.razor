@@ -8,25 +8,21 @@
         <DialogContent>
             <MudGrid Spacing="5" Class="mb-5">
                 <MudItem xs="8">
-                    <MudTextField T="string" 
-                        Variant="Variant.Outlined" 
-                        Label="Название" 
-                        @bind-Value="_lesson.Name" 
-                        For="@(() => _lesson.Name)"></MudTextField>
+                    <MudTextField T="string"
+                                  Variant="Variant.Outlined"
+                                  Label="Название"
+                                  @bind-Value="_lesson.Name"
+                                  For="@(() => _lesson.Name)"></MudTextField>
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Class="mb-1">Добавить лекцию</MudText>
                     <MudText Typo="Typo.caption">Максимальный размер файла не должен превышать 10МБ!</MudText>
-                    <InputFile id="fileInput" OnChange="FileUpload" accept=".pdf, .txt, .docx"></InputFile>   
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudText Typo="Typo.h6" Class="mb-1">Добавить тест</MudText>
+                    <InputFile id="fileInput" OnChange="FileUpload" accept=".pdf, .txt, .docx"></InputFile>
                 </MudItem>
 
                 <MudItem xs="12">
                     <MudContainer>
-                        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Создание теста</MudText>
+                        <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">Создание теста</MudText>
                         <MudTextField Label="Название теста" @bind-Value="test.Name" Class="mb-4" />
 
                         <MudText Typo="Typo.h6" Class="mb-2">Вопросы</MudText>
@@ -44,11 +40,10 @@
                         <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="AddQuestion" Class="mb-4">Добавить вопрос</MudButton>
                     </MudContainer>
                 </MudItem>
-
             </MudGrid>
         </DialogContent>
         <DialogActions>
-            <MudButton OnClick="@Close":>Отмена</MudButton>
+            <MudButton OnClick="@Close">Отмена</MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="AddNewLesson">Добавить</MudButton>
         </DialogActions>
     </MudDialog>
@@ -80,10 +75,12 @@
 
     private void AddAnswerOption(Question question)
     {
-        question.AnswerOptions.Add("");
+            question.AnswerOptions.Add("");
     }
 
+
     private void Close() => MudDialog.Close(DialogResult.Cancel());
+
     private void CloseBySave() => MudDialog.Close(DialogResult.Ok(_lesson));
 
     private void AddNewLesson()
@@ -121,7 +118,7 @@
             snackbar.Add("Новый урок успешно добавлен!", Severity.Success);
         }
 
-        else if(!success)
+        else if (!success)
         {
             snackbar.Add("Название урока не может быть пустым!", Severity.Error);
         }
@@ -148,8 +145,6 @@
                     fileName = file.Name;
                 }
             }
-
-            //await fileSystemService.UploadFileToDbAsync(fileName, fileBytes);
         }
 
         else

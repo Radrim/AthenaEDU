@@ -1,0 +1,63 @@
+﻿@using MongoDB.Bson
+@inject ISnackbar snackbar
+@inject CourseService courseService
+
+<MudForm Model="question">
+    <MudDialog>
+        <DialogContent>
+            <MudTextField T="string" Label="Вопрос" @bind-Value="question.Text" For="@(() => question.Text)"></MudTextField>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@Close">Отмена</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewModule">Добавить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private Question question;
+
+    protected async override Task OnInitializedAsync()
+    {
+        question = new Question();
+        await base.OnInitializedAsync();
+    }
+
+    private void Close() => MudDialog.Close(DialogResult.Cancel());
+    private void CloseBySave() => MudDialog.Close(DialogResult.Ok(question));
+
+    private async Task AddNewModule()
+    {
+        bool success = false;
+
+        try
+        {
+            if (!String.IsNullOrEmpty(question.Text))
+            {
+                success = true;
+                CloseBySave();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении вопроса: {ex.Message}");
+        }
+
+        if (success)
+        {
+            snackbar.Add("Новый вопрос успешно добавлен!", Severity.Success);
+        }
+
+        else if (String.IsNullOrEmpty(question.Text))
+        {
+            snackbar.Add("Название вопроса не может быть пустым!", Severity.Error);
+        }
+
+        else
+        {
+            snackbar.Add("При создании вопроса произошла ошибка!", Severity.Error);
+        }
+    }
+}
+
